@@ -1,0 +1,138 @@
+/* ===========================
+   CHRONICLE — Journey Page Styles
+   =========================== */
+
+/* --- Journey Header --- */
+.journey-header {
+  margin-bottom: 2rem;
+}
+
+.journey-header h1 {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.journey-header p {
+  color: var(--color-text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* --- Timeline --- */
+.timeline {
+  position: relative;
+  padding: 0;
+  margin: 0 0 2.5rem;
+}
+
+/* Vertical connector line */
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 18px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-border);
+}
+
+.timeline-item {
+  position: relative;
+  padding-left: 52px;
+  padding-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+/* Node dot */
+.timeline-dot {
+  position: absolute;
+  left: 8px;
+  top: 4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 3px solid var(--color-border);
+  z-index: 1;
+}
+
+.timeline-item.active .timeline-dot {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.timeline-item.active .timeline-dot::after {
+  content: "";
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.timeline-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.timeline-item.active .timeline-card {
+  border-color: var(--color-accent);
+}
+
+.timeline-name {
+  font-weight: 700;
+  font-size: var(--font-size-base);
+  margin-bottom: 0.125rem;
+}
+
+.timeline-action {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.timeline-action span {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.timeline-date {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-top: 0.25rem;
+}
+
+/* --- Continue Journey Section --- */
+.continue-section {
+  margin-top: 2.5rem;
+}
+
+.continue-section h2 {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.continue-section p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: 1.5rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 600px) {
+  .journey-header h1 {
+    font-size: var(--font-size-xl);
+  }
+
+  .timeline-item {
+    padding-left: 44px;
+  }
+}

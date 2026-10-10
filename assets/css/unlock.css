@@ -1,0 +1,162 @@
+/* ===========================
+   CHRONICLE — Unlock Page Styles
+   =========================== */
+
+/* --- Lock Status Section --- */
+.unlock-status {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.lock-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  transition: transform 0.4s ease;
+}
+
+.lock-icon.unlocked {
+  transform: scale(1.15);
+}
+
+.status-text {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.status-text.granted {
+  color: var(--color-accent);
+}
+
+/* Spinner */
+.spinner {
+  display: none;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0.75rem auto 0;
+}
+
+.spinner.active {
+  display: block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* --- Capsule Content --- */
+.capsule-content {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  margin-top: 2rem;
+}
+
+.capsule-content.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.capsule-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 1.5rem 0;
+}
+
+.capsule-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  color: var(--color-text);
+}
+
+.capsule-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.capsule-meta-item {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.capsule-meta-item strong {
+  display: block;
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  margin-bottom: 0.125rem;
+}
+
+.capsule-message {
+  font-size: var(--font-size-base);
+  line-height: 1.8;
+  color: var(--color-text);
+  background: var(--color-accent-light);
+  border-left: 3px solid var(--color-accent);
+  padding: 1.25rem 1.5rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin-bottom: 1.5rem;
+}
+
+.capsule-attachment {
+  margin-bottom: 1.5rem;
+}
+
+.capsule-attachment strong {
+  display: block;
+  font-size: var(--font-size-sm);
+  margin-bottom: 0.5rem;
+  color: var(--color-text-secondary);
+}
+
+.capsule-attachment a {
+  font-weight: 500;
+}
+
+/* --- Action Buttons --- */
+.capsule-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+/* --- Reduced Motion Override --- */
+@media (prefers-reduced-motion: reduce) {
+  .capsule-content {
+    opacity: 1;
+    transform: none;
+  }
+
+  .spinner {
+    animation: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .unlock-status {
+    padding: 2rem 0.5rem;
+  }
+
+  .capsule-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .capsule-actions {
+    flex-direction: column;
+  }
+
+  .capsule-actions .btn {
+    width: 100%;
+  }
+}

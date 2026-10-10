@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Track the journey of a Chronicle time capsule as it travels from person to person across time. Continue the chain."
+    />
+    <title>Capsule Journey — Chronicle</title>
+    <link rel="stylesheet" href="../assets/css/common.css" />
+    <link rel="stylesheet" href="../assets/css/journey.css" />
+  </head>
+  <body>
+    <!-- Skip to content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header class="site-header">
+      <div class="site-logo">Chronicle<span>.</span></div>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="#">My Vault</a>
+        <a href="journey.html" class="active" aria-current="page">Journey</a>
+        <a href="unlock.html">Unlock</a>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Journey Header -->
+      <section class="journey-header">
+        <h1>Capsule Journey</h1>
+        <p>Track how this capsule has traveled across people and time.</p>
+      </section>
+
+      <!-- Timeline -->
+      <section aria-label="Capsule journey timeline">
+        <ol id="timeline-list" class="timeline">
+          <!-- Rendered by journey.js -->
+        </ol>
+      </section>
+
+      <!-- Continue Journey -->
+      <section class="continue-section card" aria-label="Continue the journey">
+        <h2>Continue the Journey</h2>
+        <p>Pass this capsule forward to another Chronicle user.</p>
+
+        <form id="continue-form" novalidate>
+          <div class="form-group">
+            <label for="recipient">Recipient Username</label>
+            <input
+              type="text"
+              id="recipient"
+              name="recipient"
+              placeholder="e.g. ananya.rao"
+              required
+              autocomplete="off"
+              aria-describedby="recipient-error"
+            />
+            <span id="recipient-error" class="error-msg" role="alert">
+              Please enter a recipient username.
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="journey-message">Add a Message (Optional)</label>
+            <textarea
+              id="journey-message"
+              name="journey-message"
+              placeholder="Write something for the next person…"
+              rows="4"
+            ></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            Continue Journey →
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p>&copy; 2026 Chronicle. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/journey.js"></script>
+  </body>
+</html>
