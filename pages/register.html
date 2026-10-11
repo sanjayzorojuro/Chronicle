@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Create a new Chronicle account to craft future time capsules, schedule memories, and participate in person-to-person time chains."
+    />
+    <title>Create Account — Chronicle</title>
+    <link rel="stylesheet" href="../assets/css/common.css" />
+    <link rel="stylesheet" href="../assets/css/auth.css" />
+  </head>
+  <body>
+    <!-- Skip to content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header class="site-header">
+      <a href="vault.html" class="site-logo">Chronicle<span>.</span></a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="login.html">Sign In</a>
+        <a href="vault.html">My Vault</a>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" class="auth-main">
+      <div class="auth-card card">
+        <div class="auth-header">
+          <div class="auth-icon" aria-hidden="true">⏳</div>
+          <h1>Join Chronicle</h1>
+          <p>Create your identity to start crafting future capsules</p>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="register-form" novalidate>
+          <div class="form-group" id="group-fullname">
+            <label for="fullname">Full Name</label>
+            <input
+              type="text"
+              id="fullname"
+              name="fullname"
+              placeholder="e.g. Daron John"
+              required
+              autocomplete="name"
+            />
+            <span class="error-msg" id="fullname-error">Please enter your full name.</span>
+          </div>
+
+          <div class="form-group" id="group-reg-username">
+            <label for="reg-username">Username</label>
+            <input
+              type="text"
+              id="reg-username"
+              name="reg-username"
+              placeholder="e.g. daron.john"
+              required
+              autocomplete="username"
+            />
+            <span class="error-msg" id="reg-username-error">Username must be at least 3 characters.</span>
+          </div>
+
+          <div class="form-group" id="group-email">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              placeholder="e.g. daron@example.com"
+              required
+              autocomplete="email"
+            />
+            <span class="error-msg" id="email-error">Please enter a valid email address.</span>
+          </div>
+
+          <div class="form-group" id="group-reg-password">
+            <label for="reg-password">Password</label>
+            <input
+              type="password"
+              id="reg-password"
+              name="reg-password"
+              placeholder="Create a strong password (min 6 chars)"
+              required
+              autocomplete="new-password"
+            />
+            <span class="error-msg" id="reg-password-error">Password must be at least 6 characters.</span>
+          </div>
+
+          <div class="form-group" id="group-confirm-password">
+            <label for="confirm-password">Confirm Password</label>
+            <input
+              type="password"
+              id="confirm-password"
+              name="confirm-password"
+              placeholder="Re-enter your password"
+              required
+              autocomplete="new-password"
+            />
+            <span class="error-msg" id="confirm-password-error">Passwords do not match.</span>
+          </div>
+
+          <div class="auth-options">
+            <label class="remember-label" for="agree-terms">
+              <input type="checkbox" id="agree-terms" required />
+              <span>I agree to Chronicle's Privacy Guarantee & Terms</span>
+            </label>
+            <span class="error-msg" id="terms-error">You must accept the terms to continue.</span>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-auth-submit" id="btn-register">
+            Create My Chronicle Account →
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Already have an account? <a href="login.html">Sign In Here</a></p>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p>&copy; 2026 Chronicle. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/auth.js"></script>
+  </body>
+</html>
