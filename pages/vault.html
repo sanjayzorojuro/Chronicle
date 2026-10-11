@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Access your personal Chronicle Vault. Track sealed time capsules with live countdowns, unlock arriving memories, and manage time chains."
+    />
+    <title>My Vault — Chronicle</title>
+    <link rel="stylesheet" href="../assets/css/common.css" />
+    <link rel="stylesheet" href="../assets/css/vault.css" />
+  </head>
+  <body>
+    <!-- Skip to content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header class="site-header">
+      <div class="site-logo">Chronicle<span>.</span></div>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="vault.html" class="active" aria-current="page">My Vault</a>
+        <a href="seal.html">Seal Capsule</a>
+        <a href="journey.html">Journey</a>
+        <a href="unlock.html">Unlock</a>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Live region for screen readers -->
+      <div id="live-region" aria-live="polite" class="sr-only" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
+
+      <!-- Vault Hero & Header -->
+      <section class="vault-hero">
+        <div class="hero-left">
+          <h1>My Vault</h1>
+          <p>Your secure repository of encrypted future memories, scheduled letters, and time chains.</p>
+        </div>
+        <div class="hero-actions">
+          <a href="seal.html" class="btn btn-primary">+ New Capsule</a>
+        </div>
+      </section>
+
+      <!-- Vault Metrics Overview -->
+      <section class="metrics-grid" aria-label="Vault Statistics">
+        <div class="metric-card">
+          <div class="metric-icon" aria-hidden="true">🔒</div>
+          <div class="metric-details">
+            <span class="metric-number" id="stat-sealed-count">0</span>
+            <span class="metric-label">Sealed Capsules</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon ready-icon" aria-hidden="true">🔓</div>
+          <div class="metric-details">
+            <span class="metric-number" id="stat-ready-count">0</span>
+            <span class="metric-label">Ready / Unlocked</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" aria-hidden="true">⛓️</div>
+          <div class="metric-details">
+            <span class="metric-number" id="stat-journey-count">0</span>
+            <span class="metric-label">Journey Chains</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vault Controls: Navigation Tabs & Search/Filter Toolbar -->
+      <section class="vault-controls card" aria-label="Vault filtering and search">
+        <!-- View Tabs -->
+        <div class="vault-tabs" role="tablist" aria-label="Capsule filtering tabs">
+          <button
+            type="button"
+            class="tab-btn active"
+            role="tab"
+            aria-selected="true"
+            id="tab-all"
+            data-filter="all"
+          >
+            All Capsules (<span id="count-all">0</span>)
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            role="tab"
+            aria-selected="false"
+            id="tab-created"
+            data-filter="created"
+          >
+            Created by Me (<span id="count-created">0</span>)
+          </button>
+          <button
+            type="button"
+            class="tab-btn"
+            role="tab"
+            aria-selected="false"
+            id="tab-received"
+            data-filter="received"
+          >
+            Received by Me (<span id="count-received">0</span>)
+          </button>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="filter-toolbar">
+          <div class="search-box">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              id="vault-search-input"
+              placeholder="Search by capsule title, creator or recipient..."
+              aria-label="Search capsules"
+            />
+          </div>
+
+          <div class="filter-dropdowns">
+            <div class="select-wrapper">
+              <label for="category-select" class="sr-only">Category Filter</label>
+              <select id="category-select" aria-label="Filter by category">
+                <option value="all">All Categories</option>
+                <option value="Friendship">Friendship</option>
+                <option value="Personal">Personal</option>
+                <option value="Milestone">Milestone</option>
+                <option value="Memories">Memories</option>
+              </select>
+            </div>
+
+            <div class="select-wrapper">
+              <label for="status-select" class="sr-only">Status Filter</label>
+              <select id="status-select" aria-label="Filter by lock status">
+                <option value="all">All Statuses</option>
+                <option value="sealed">🔒 Sealed Only</option>
+                <option value="ready">🔓 Ready / Unlocked</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Capsules Grid -->
+      <section class="capsules-section" aria-label="Capsules List">
+        <div id="capsules-grid" class="capsules-grid">
+          <!-- Populated dynamically by vault.js -->
+        </div>
+
+        <!-- Empty State (hidden by default) -->
+        <div id="empty-state" class="empty-state card" style="display: none;">
+          <div class="empty-icon" aria-hidden="true">📦</div>
+          <h2>No Capsules Found</h2>
+          <p id="empty-desc">No capsules match your current search and filter criteria.</p>
+          <a href="seal.html" class="btn btn-primary">Seal a New Capsule</a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Capsule Detail / Seal Inspector Modal -->
+    <div id="inspect-modal" class="inspect-modal" role="dialog" aria-modal="true" aria-labelledby="modal-cap-title" style="display: none;">
+      <div class="inspect-modal-content card">
+        <div class="modal-header">
+          <span class="inspect-badge" id="modal-cap-badge">🔒 Sealed</span>
+          <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close modal">&times;</button>
+        </div>
+        <h2 id="modal-cap-title" class="inspect-title"></h2>
+        <div class="inspect-meta-grid">
+          <div class="meta-item">
+            <strong>Creator</strong>
+            <span id="modal-cap-creator"></span>
+          </div>
+          <div class="meta-item">
+            <strong>Recipient(s)</strong>
+            <span id="modal-cap-recipient"></span>
+          </div>
+          <div class="meta-item">
+            <strong>Category</strong>
+            <span id="modal-cap-category"></span>
+          </div>
+          <div class="meta-item">
+            <strong>Date Sealed</strong>
+            <span id="modal-cap-date-created"></span>
+          </div>
+        </div>
+
+        <div class="inspect-timer-box">
+          <span class="timer-title">Time Remaining Until Vault Door Unlocks</span>
+          <div id="modal-cap-countdown" class="modal-countdown-ticker">--</div>
+          <span class="target-date-line">Target Date: <strong id="modal-cap-target-date"></strong></span>
+        </div>
+
+        <p class="lock-notice" id="modal-cap-notice">
+          🔒 Cryptographically locked. The capsule message is encrypted and will become readable once the countdown hits zero.
+        </p>
+
+        <div class="modal-footer-actions">
+          <div id="modal-action-wrapper"></div>
+          <button type="button" id="btn-modal-dismiss" class="btn btn-outline">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p>&copy; 2026 Chronicle. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/vault.js"></script>
+  </body>
+</html>
