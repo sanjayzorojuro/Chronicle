@@ -13,8 +13,24 @@ var demoCapsule = {
   dateCreated: "15 August 2026",
   dateOpened: "9 October 2027",
   link: "https://example.com/photo-album",
-  linkLabel: "Attached Photo Album",
+  linkLabel: "Attached Photo Album"
 };
+
+// Check if an active capsule was selected from My Vault
+try {
+  var storedActive = localStorage.getItem("chronicle_active_capsule");
+  if (storedActive) {
+    var parsedActive = JSON.parse(storedActive);
+    demoCapsule.title = parsedActive.title || demoCapsule.title;
+    demoCapsule.message = parsedActive.message || demoCapsule.message;
+    demoCapsule.creator = parsedActive.creator || demoCapsule.creator;
+    demoCapsule.category = parsedActive.category || demoCapsule.category;
+    demoCapsule.dateCreated = parsedActive.dateCreated || demoCapsule.dateCreated;
+    demoCapsule.dateOpened = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  }
+} catch (e) {
+  console.warn("Storage access failed in unlock.js:", e);
+}
 
 /**
  * Runs the 3-step unlock animation sequence:

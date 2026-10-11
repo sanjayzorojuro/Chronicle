@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Select recipients, configure privacy options, and seal your digital time capsule until its unlock date on Chronicle."
+    />
+    <title>Recipient Selection & Seal Capsule — Chronicle</title>
+    <link rel="stylesheet" href="../assets/css/common.css" />
+    <link rel="stylesheet" href="../assets/css/seal.css" />
+  </head>
+  <body>
+    <!-- Skip to content (Accessibility) -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header -->
+    <header class="site-header">
+      <div class="site-logo">Chronicle<span>.</span></div>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="vault.html">My Vault</a>
+        <a href="seal.html" class="active" aria-current="page">Seal Capsule</a>
+        <a href="journey.html">Journey</a>
+        <a href="unlock.html">Unlock</a>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Live region for screen readers -->
+      <div id="live-region" aria-live="polite" class="sr-only" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
+
+      <!-- Creation Progress Bar -->
+      <div class="creation-stepper" aria-label="Creation Progress">
+        <div class="step-indicator">
+          <span class="step-num completed">✓</span>
+          <span class="step-text">1. Studio Draft</span>
+        </div>
+        <div class="step-line active"></div>
+        <div class="step-indicator active">
+          <span class="step-num current">2</span>
+          <span class="step-text">2. Recipient & Seal</span>
+        </div>
+      </div>
+
+      <header class="page-intro">
+        <h1>Recipient & Capsule Sealing</h1>
+        <p>Confirm capsule details, choose your recipient, and lock your message in time.</p>
+      </header>
+
+      <!-- Capsule Preview Card -->
+      <section class="card capsule-preview-card" aria-label="Capsule summary">
+        <div class="preview-header">
+          <div>
+            <span class="preview-badge" id="preview-category">Friendship</span>
+            <h2 id="preview-title" class="preview-title">A Letter for My Future Self</h2>
+          </div>
+          <div class="unlock-countdown-preview" id="preview-target-badge">
+            <span class="unlock-label">Scheduled Unlock</span>
+            <strong id="preview-unlock-date">01 September 2027</strong>
+          </div>
+        </div>
+        <p class="preview-excerpt" id="preview-message">
+          "Remember the challenges you conquered, the dreams you chased, and never forget where this journey started."
+        </p>
+      </section>
+
+      <!-- Seal Configuration Form -->
+      <form id="seal-form" class="card seal-card" novalidate>
+        <!-- Recipient Mode -->
+        <fieldset class="form-section">
+          <legend class="section-legend">1. Select Recipient</legend>
+          <p class="section-desc">Choose who will be granted access when the unlock date arrives.</p>
+
+          <div class="recipient-options" role="radiogroup" aria-label="Recipient choices">
+            <label class="recipient-option-card active" id="label-myself">
+              <input type="radio" name="recipient-mode" value="myself" checked />
+              <div class="option-icon">👤</div>
+              <div class="option-info">
+                <strong>Myself</strong>
+                <span>Personal time capsule locked for your future self</span>
+              </div>
+            </label>
+
+            <label class="recipient-option-card" id="label-single">
+              <input type="radio" name="recipient-mode" value="single" />
+              <div class="option-icon">👥</div>
+              <div class="option-info">
+                <strong>One Chronicle User</strong>
+                <span>Send to a friend or classmate on the platform</span>
+              </div>
+            </label>
+
+            <label class="recipient-option-card" id="label-multiple">
+              <input type="radio" name="recipient-mode" value="multiple" />
+              <div class="option-icon">🌐</div>
+              <div class="option-info">
+                <strong>Multiple Users</strong>
+                <span>Share a shared memory with multiple friends</span>
+              </div>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Recipient Search Box (Hidden if 'myself' is selected) -->
+        <div id="recipient-selector-group" class="form-group recipient-selector" style="display: none;">
+          <label for="user-search-input">Search Chronicle Users</label>
+          <div class="search-input-wrapper">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input
+              type="text"
+              id="user-search-input"
+              placeholder="Search by username or name (e.g. mounika, sanjay)..."
+              autocomplete="off"
+              aria-describedby="user-search-help"
+            />
+            <!-- Dropdown autocomplete results -->
+            <ul id="user-autocomplete-list" class="autocomplete-list" role="listbox" style="display: none;">
+              <!-- Populated by JS -->
+            </ul>
+          </div>
+          <p id="user-search-help" class="form-help">Search and select registered Chronicle users to assign as recipients.</p>
+          <span id="recipient-error" class="error-msg" role="alert">Please select at least one recipient.</span>
+
+          <!-- Selected recipient tags / chips -->
+          <div id="selected-recipients-box" class="selected-recipients-container" aria-label="Selected recipients">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Privacy & Visibility Settings -->
+        <fieldset class="form-section">
+          <legend class="section-legend">2. Privacy & Delivery Settings</legend>
+
+          <div class="checkbox-option">
+            <label class="checkbox-label" for="setting-public">
+              <input type="checkbox" id="setting-public" name="is-public" />
+              <span class="custom-checkbox"></span>
+              <span class="checkbox-text">
+                <strong>Allow entry on Public Time Wall after unlock</strong>
+                <small>Allows others to discover this memory publicly on the Time Wall once unlocked.</small>
+              </span>
+            </label>
+          </div>
+
+          <div class="checkbox-option">
+            <label class="checkbox-label" for="setting-notify">
+              <input type="checkbox" id="setting-notify" name="notify-email" checked />
+              <span class="custom-checkbox"></span>
+              <span class="checkbox-text">
+                <strong>Email Notification</strong>
+                <small>Send an arrival dispatch email to recipient(s) on the day the capsule unlocks.</small>
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
+        <!-- Digital Wax Seal Action Box -->
+        <div class="seal-action-box">
+          <div class="seal-guarantee">
+            <span class="lock-graphic" aria-hidden="true">🔒</span>
+            <div>
+              <strong>Cryptographic Seal Guarantee</strong>
+              <p>Once sealed, the contents remain encrypted and locked until the designated unlock date arrives.</p>
+            </div>
+          </div>
+
+          <!-- Interactive Wax Seal Button -->
+          <button type="submit" id="btn-seal" class="btn btn-primary btn-seal-action">
+            <span class="seal-btn-icon" aria-hidden="true">🔒</span>
+            <span class="seal-btn-text">Seal Capsule Now</span>
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Sealing Modal Animation Overlay -->
+    <div id="seal-modal" class="seal-modal" role="dialog" aria-modal="true" aria-labelledby="seal-modal-title" style="display: none;">
+      <div class="seal-modal-content">
+        <div class="wax-stamp-container">
+          <div id="wax-stamp" class="wax-stamp">
+            <div class="stamp-inner">
+              <span class="stamp-icon">⏳</span>
+              <span class="stamp-label">SEALED</span>
+              <span class="stamp-year">2026</span>
+            </div>
+          </div>
+        </div>
+
+        <h2 id="seal-modal-title" class="modal-title">Sealing Capsule...</h2>
+        <p id="seal-modal-desc" class="modal-desc">Encrypting message and locking vault chronometer...</p>
+
+        <div id="seal-success-actions" class="modal-actions" style="display: none;">
+          <a href="vault.html" class="btn btn-primary">Go to My Vault →</a>
+          <a href="seal.html" class="btn btn-outline">Seal Another</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      <p>&copy; 2026 Chronicle. All rights reserved.</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/seal.js"></script>
+  </body>
+</html>
