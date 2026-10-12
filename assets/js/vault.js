@@ -81,27 +81,24 @@ var timerInterval = null;
  * Initialize capsule list from localStorage or seed
  */
 function initVaultData() {
-  try {
-    var stored = localStorage.getItem("chronicle_vault_capsules");
-    if (stored) {
-      var parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Merge user-created capsules with seed data to maintain a rich demo
-        var userIds = parsed.map(function (c) { return c.id; });
-        var filteredSeeds = defaultSeedCapsules.filter(function (s) {
-          return userIds.indexOf(s.id) === -1;
-        });
-        allCapsules = parsed.concat(filteredSeeds);
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultCapsules) {
+    allCapsules = ChronicleDB.getVaultCapsules();
+  } else {
+    try {
+      var stored = localStorage.getItem("chronicle_vault_capsules");
+      if (stored) {
+        var parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          allCapsules = parsed;
+        } else {
+          allCapsules = defaultSeedCapsules.slice();
+        }
       } else {
         allCapsules = defaultSeedCapsules.slice();
       }
-    } else {
+    } catch (err) {
       allCapsules = defaultSeedCapsules.slice();
-      localStorage.setItem("chronicle_vault_capsules", JSON.stringify(allCapsules));
     }
-  } catch (err) {
-    console.warn("Storage access failed, using default seed capsules:", err);
-    allCapsules = defaultSeedCapsules.slice();
   }
 
   updateMetrics();

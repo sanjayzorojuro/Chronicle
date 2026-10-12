@@ -161,6 +161,15 @@ function handleRegister(event) {
   };
 
   // Append to registered users list
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.addUser) {
+    ChronicleDB.addUser({
+      username: username,
+      full_name: name,
+      email: email,
+      avatar: newUser.avatar
+    });
+  }
+
   var currentUsers = getRegisteredUsers();
   currentUsers.push(newUser);
   try {
@@ -181,6 +190,20 @@ function handleRegister(event) {
  * Retrieve registered users list from storage or defaults
  */
 function getRegisteredUsers() {
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.getUsers) {
+    var dbUsers = ChronicleDB.getUsers();
+    if (dbUsers && dbUsers.length > 0) {
+      return dbUsers.map(function (u) {
+        return {
+          id: u.user_id,
+          username: u.username,
+          name: u.full_name || u.name,
+          email: u.email,
+          avatar: u.avatar || u.username.slice(0, 2).toUpperCase()
+        };
+      });
+    }
+  }
   try {
     var stored = localStorage.getItem("chronicle_registered_users");
     if (stored) {

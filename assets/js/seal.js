@@ -286,6 +286,20 @@ function sealCapsule(event) {
  * Save record into localStorage vault collection
  */
 function saveCapsuleToVault(newCapsule) {
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.createCapsule) {
+    ChronicleDB.createCapsule(
+      {
+        title: newCapsule.title,
+        message: newCapsule.message,
+        category: newCapsule.category,
+        unlock_date: newCapsule.unlockDate,
+        display_unlock_date: newCapsule.displayUnlockDate,
+        is_public: newCapsule.isPublic
+      },
+      selectedRecipients,
+      selectedMode
+    );
+  }
   try {
     var vaultData = [];
     var existing = localStorage.getItem("chronicle_vault_capsules");
