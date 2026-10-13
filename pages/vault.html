@@ -30,7 +30,7 @@
     <!-- Main Content -->
     <main id="main-content">
       <!-- Live region for screen readers -->
-      <div id="live-region" aria-live="polite" class="sr-only" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
+      <div id="live-region" aria-live="polite" class="sr-only"></div>
 
       <!-- Vault Hero & Header -->
       <section class="vault-hero">
@@ -110,6 +110,7 @@
         <div class="filter-toolbar">
           <div class="search-box">
             <span class="search-icon" aria-hidden="true">🔍</span>
+            <label for="vault-search-input" class="sr-only">Search capsules by title, creator, or recipient</label>
             <input
               type="text"
               id="vault-search-input"

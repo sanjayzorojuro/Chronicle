@@ -30,7 +30,7 @@
     <!-- Main Content -->
     <main id="main-content">
       <!-- Live region for screen readers -->
-      <div id="live-region" aria-live="polite" class="sr-only" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;"></div>
+      <div id="live-region" aria-live="polite" class="sr-only"></div>
 
       <!-- Creation Progress Bar -->
       <div class="creation-stepper" aria-label="Creation Progress">
@@ -75,27 +75,27 @@
           <p class="section-desc">Choose who will be granted access when the unlock date arrives.</p>
 
           <div class="recipient-options" role="radiogroup" aria-label="Recipient choices">
-            <label class="recipient-option-card active" id="label-myself">
-              <input type="radio" name="recipient-mode" value="myself" checked />
-              <div class="option-icon">👤</div>
+            <label class="recipient-option-card active" id="label-myself" for="mode-myself">
+              <input type="radio" id="mode-myself" name="recipient-mode" value="myself" checked />
+              <div class="option-icon" aria-hidden="true">👤</div>
               <div class="option-info">
                 <strong>Myself</strong>
                 <span>Personal time capsule locked for your future self</span>
               </div>
             </label>
 
-            <label class="recipient-option-card" id="label-single">
-              <input type="radio" name="recipient-mode" value="single" />
-              <div class="option-icon">👥</div>
+            <label class="recipient-option-card" id="label-single" for="mode-single">
+              <input type="radio" id="mode-single" name="recipient-mode" value="single" />
+              <div class="option-icon" aria-hidden="true">👥</div>
               <div class="option-info">
                 <strong>One Chronicle User</strong>
                 <span>Send to a friend or classmate on the platform</span>
               </div>
             </label>
 
-            <label class="recipient-option-card" id="label-multiple">
-              <input type="radio" name="recipient-mode" value="multiple" />
-              <div class="option-icon">🌐</div>
+            <label class="recipient-option-card" id="label-multiple" for="mode-multiple">
+              <input type="radio" id="mode-multiple" name="recipient-mode" value="multiple" />
+              <div class="option-icon" aria-hidden="true">🌐</div>
               <div class="option-info">
                 <strong>Multiple Users</strong>
                 <span>Share a shared memory with multiple friends</span>

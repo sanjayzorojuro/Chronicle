@@ -7,9 +7,9 @@
 :root {
   --color-bg: #ffffff;
   --color-text: #1a1a1a;
-  --color-text-secondary: #6b6b6b;
-  --color-accent: #e8600a;
-  --color-accent-hover: #cc5200;
+  --color-text-secondary: #575757;
+  --color-accent: #d95300;
+  --color-accent-hover: #b84400;
   --color-accent-light: #fff3eb;
   --color-border: #e0e0e0;
   --color-white: #ffffff;
@@ -54,6 +54,7 @@ body {
 
 img {
   max-width: 100%;
+  height: auto;
   display: block;
 }
 
@@ -86,6 +87,19 @@ ul, ol {
 
 .skip-link:focus {
   top: 1rem;
+}
+
+/* --- Screen Reader Only Utility --- */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 /* --- Header --- */
