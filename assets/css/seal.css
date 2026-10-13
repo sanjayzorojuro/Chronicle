@@ -597,21 +597,72 @@
 }
 
 /* --- Responsive Adjustments --- */
-@media (max-width: 600px) {
-  .recipient-options {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .page-intro h1 {
+    font-size: 1.625rem;
   }
 
-  .preview-header {
-    flex-direction: column;
-  }
-
-  .unlock-countdown-preview {
-    width: 100%;
-    text-align: left;
+  .creation-stepper {
+    gap: 0.5rem;
   }
 
   .step-text {
     display: none;
+  }
+
+  .step-line {
+    width: 36px;
+  }
+
+  .capsule-preview-card {
+    padding: 1.25rem 1rem;
+  }
+
+  .preview-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .preview-title {
+    font-size: 1.25rem;
+  }
+
+  .unlock-countdown-preview {
+    width: 100%;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .seal-card {
+    padding: 1.25rem 1rem;
+    gap: 1.5rem;
+  }
+
+  .recipient-options {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .recipient-option-card {
+    padding: 0.875rem 1rem;
+  }
+
+  .seal-modal {
+    padding: 0.75rem;
+  }
+
+  .seal-modal-content {
+    padding: 1.5rem 1rem;
+  }
+
+  .wax-stamp {
+    width: 76px;
+    height: 76px;
+  }
+
+  .btn-seal-action {
+    font-size: 0.9375rem;
+    padding: 0.875rem 1rem;
   }
 }

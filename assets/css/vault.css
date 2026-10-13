@@ -550,22 +550,84 @@
   100% { transform: scale(1); }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .vault-hero {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .hero-left h1 {
+    font-size: 1.625rem;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 
   .filter-toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .search-box {
+    width: 100%;
+    min-width: 0;
   }
 
   .filter-dropdowns {
     flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .select-wrapper,
+  .select-wrapper select {
+    width: 100%;
   }
 
   .capsules-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .capsule-card {
+    padding: 1.25rem 1rem;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .card-actions .btn {
+    width: 100%;
+  }
+
+  .inspect-modal {
+    padding: 0.75rem;
+  }
+
+  .inspect-modal-content {
+    padding: 1.25rem 1rem;
+  }
+
+  .inspect-meta-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .modal-footer-actions {
+    flex-direction: column;
+  }
+
+  .modal-footer-actions .btn {
+    width: 100%;
   }
 }
