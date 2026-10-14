@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Meet Chronicle: write a digital time capsule today and give a memory a future." />
+  <title>Discover Chronicle — A little now. A lot later.</title>
+  <link rel="stylesheet" href="../assets/css/common.css" />
+  <link rel="stylesheet" href="../assets/css/member1.css" />
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- The shared header follows the style of the uploaded pages. -->
+  <header class="site-header member-header">
+    <div class="header-inner">
+      <a class="site-logo" href="discover.html" aria-label="Chronicle home">Chronicle<span>.</span></a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="discover.html" class="active" aria-current="page">Discover</a>
+        <a href="#how-it-works">How it works</a>
+      </nav>
+      <a class="btn btn-primary header-cta" href="create.html">Create capsule <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main id="main-content" class="member-main discover-main">
+    <!-- Introduction -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="small-dot" aria-hidden="true"></span> A LITTLE NOW. A LOT LATER.</p>
+        <h1 id="hero-title">Some words are<br />worth <span>waiting for.</span></h1>
+        <p class="hero-description">Turn a message, a memory, or a little hope into a digital time capsule. Write it today. Open it when the moment is right.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="create.html">Create your first capsule <span aria-hidden="true">→</span></a>
+          <a class="text-link" href="#how-it-works">See how it works <span aria-hidden="true">↓</span></a>
+        </div>
+        <p class="hero-note">For your future self. For someone you love.</p>
+      </div>
+
+      <!-- This small illustration is made with HTML, CSS and inline SVG. No image download is needed. -->
+      <div class="hero-visual" role="img" aria-label="An illustrated letter to your future self, sealed in an envelope and waiting to open on 10 October 2027.">
+        <div class="visual-label" aria-hidden="true"><span class="small-dot"></span> FROM TODAY, WITH LOVE</div>
+        <div class="paper-note" aria-hidden="true">
+          <span class="paper-label">A LETTER TO MY FUTURE SELF</span>
+          <p class="paper-greeting">Dear future me,</p>
+          <p class="paper-message">I hope you're still making time for the little things.</p>
+          <div class="paper-lines"><i></i><i></i></div>
+        </div>
+        <svg class="envelope-art" viewBox="0 0 340 205" fill="none" aria-hidden="true">
+          <path d="M12 58 170 8 328 58V184a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10V58Z" fill="#f7d6bf" stroke="#deb18f" stroke-width="1.5" />
+          <path d="M12 58h316v126a10 10 0 0 1-10 10H22a10 10 0 0 1-10-10V58Z" fill="#ffe9d9" stroke="#deb18f" stroke-width="1.5" />
+          <path d="m12 63 158 90L328 63" stroke="#deb18f" stroke-width="1.5" />
+          <path d="m14 189 110-76m202 76-110-76" stroke="#deb18f" stroke-width="1.5" />
+          <circle cx="170" cy="147" r="25" fill="#e8600a" />
+          <rect x="161" y="144" width="18" height="14" rx="3" stroke="white" stroke-width="1.7" />
+          <path d="M165 144v-4a5 5 0 0 1 10 0v4m-5 5v4" stroke="white" stroke-width="1.7" stroke-linecap="round" />
+        </svg>
+        <div class="visual-date" aria-hidden="true">
+          <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2" /></svg>
+          Opens 10 October 2027
+        </div>
+      </div>
+    </section>
+
+    <!-- Four native buttons make the lifecycle interactive and keyboard accessible. -->
+    <section id="how-it-works" class="workflow-section" aria-labelledby="workflow-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">THE CHRONICLE WAY</p>
+          <h2 id="workflow-title">A small message. A meaningful journey.</h2>
+        </div>
+        <p class="section-note">Four simple steps.<br />One moment worth keeping.</p>
+      </div>
+      <div class="workflow-grid" role="group" aria-label="Explore the capsule lifecycle">
+        <button type="button" class="workflow-step is-active" data-step="create" aria-pressed="true" aria-controls="workflow-detail">
+          <span class="step-top"><span class="step-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M5 19l4-1L20 7a2.8 2.8 0 0 0-4-4L5 14l-1 6 6-1" /></svg></span><span class="step-number">01</span></span>
+          <strong class="step-name">Create</strong>
+          <span class="step-caption">A thought, a story, a little hope.</span>
+        </button>
+        <button type="button" class="workflow-step" data-step="seal" aria-pressed="false" aria-controls="workflow-detail">
+          <span class="step-top"><span class="step-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v2" /></svg></span><span class="step-number">02</span></span>
+          <strong class="step-name">Seal</strong>
+          <span class="step-caption">Choose who it's for. Tuck it away.</span>
+        </button>
+        <button type="button" class="workflow-step" data-step="wait" aria-pressed="false" aria-controls="workflow-detail">
+          <span class="step-top"><span class="step-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2" /></svg></span><span class="step-number">03</span></span>
+          <strong class="step-name">Wait</strong>
+          <span class="step-caption">Let time do its quiet work.</span>
+        </button>
+        <button type="button" class="workflow-step" data-step="unlock" aria-pressed="false" aria-controls="workflow-detail">
+          <span class="step-top"><span class="step-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 7-2m-3 9v2" /></svg></span><span class="step-number">04</span></span>
+          <strong class="step-name">Unlock</strong>
+          <span class="step-caption">Meet a memory, all over again.</span>
+        </button>
+      </div>
+      <div id="workflow-detail" class="workflow-detail" role="status" aria-live="polite" aria-atomic="true">
+        <span id="step-detail-title" class="detail-label">01 / CREATE</span>
+        <p id="step-detail-text">Write a message, give it a title, and choose the future date on which it can be opened.</p>
+      </div>
+    </section>
+
+    <!-- Simple features also serve as optional starting ideas for the studio. -->
+    <section class="occasions-section" aria-labelledby="occasions-title">
+      <p class="eyebrow">A CAPSULE FOR EVERY CHAPTER</p>
+      <h2 id="occasions-title">What will you send forward?</h2>
+      <div class="occasion-grid">
+        <a class="occasion-card" href="create.html?template=future">
+          <span class="occasion-top"><span class="occasion-label">PERSONAL</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.4l6.1-.9L12 3Z" /></svg></span>
+          <h3>For future you.</h3>
+          <p>Your dreams today. A reminder of how far you've come tomorrow.</p>
+          <span class="occasion-action">Write a personal note <span aria-hidden="true">↗</span></span>
+        </a>
+        <a class="occasion-card" href="create.html?template=friend">
+          <span class="occasion-top"><span class="occasion-label">FRIENDSHIP</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 5.7a5.5 5.5 0 0 0-7.8 0L12 6.8l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 22l8.8-8.5a5.5 5.5 0 0 0 0-7.8Z" transform="translate(0 -2) scale(1 .95)" /></svg></span>
+          <h3>For someone special.</h3>
+          <p>A thank-you, an inside joke, or words they'll love finding later.</p>
+          <span class="occasion-action">Write to a friend <span aria-hidden="true">↗</span></span>
+        </a>
+        <a class="occasion-card" href="create.html?template=milestone">
+          <span class="occasion-top"><span class="occasion-label">MILESTONES</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 0c5-4 9 4 14 0v10c-5 4-9-4-14 0" /></svg></span>
+          <h3>For a new chapter.</h3>
+          <p>A graduation, a new beginning, or an ordinary day worth remembering.</p>
+          <span class="occasion-action">Capture a milestone <span aria-hidden="true">↗</span></span>
+        </a>
+      </div>
+      <p class="journey-feature"><span aria-hidden="true">↳</span> And the story doesn't have to end there. Recipients can continue a capsule's journey across people and time.</p>
+    </section>
+
+    <section class="closing-cta" aria-labelledby="closing-title">
+      <div><h2 id="closing-title">Give a memory a future.</h2><p>You don't need the perfect words. Just a moment worth saving.</p></div>
+      <a class="btn btn-primary" href="create.html">Let's make a capsule <span aria-hidden="true">→</span></a>
+    </section>
+  </main>
+
+  <footer class="site-footer member-footer">
+    <div class="footer-inner"><p>Made today. Meaningful tomorrow.</p><p>&copy; 2026 Chronicle. All rights reserved.</p></div>
+  </footer>
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/discover.js"></script>
+</body>
+</html>
