@@ -4,7 +4,7 @@
  * This is a front-end demo, not a secure time-lock service.
  */
 const DRAFT_KEY = "chronicleDraft";
-const RECIPIENT_PAGE = ""; // Set to Member 2's page when it is ready.
+const RECIPIENT_PAGE = "seal.html"; // Connected to Member 2's Recipient & Seal page
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("capsule-form");
@@ -153,6 +153,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const draft = buildDraft();
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+      // Sync with Member 2 (seal.js) storage format
+      const sealDraft = {
+        id: "CHR-" + Math.floor(1000 + Math.random() * 9000),
+        title: draft.title || "A Letter to My Future Self",
+        message: draft.message || "",
+        category: draft.category || "Personal",
+        unlockDate: draft.unlockDate,
+        displayUnlockDate: displayDate(draft.unlockDate),
+        creator: "Daron John",
+        dateCreated: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+        isPublic: false,
+        media_url: draft.link || draft.image || null
+      };
+      localStorage.setItem("chronicle_current_draft", JSON.stringify(sealDraft));
       createdAt = draft.createdAt;
       lastSavedDraft = draft;
       status.textContent = "Draft saved in this browser. You can come back to it.";

@@ -215,11 +215,13 @@ h2 { font-size: 28px; line-height: 1.3; letter-spacing: -0.8px; }
 }
 @media (max-width: 640px) {
   .member-main { padding-left: 20px; padding-right: 20px; }
-  .member-header { min-height: 70px; padding: 0 20px; }
-  .header-inner { gap: 12px; }
-  .site-logo { font-size: 22px; }
-  .site-nav { display: none; }
-  .header-cta { font-size: 12px; padding: 8px 12px; }
+  .member-header { min-height: auto; padding: 12px 20px; }
+  .header-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0; }
+  .site-logo { font-size: 22px; order: 1; }
+  .header-inner .nav-toggle { order: 2; margin-left: auto; }
+  .header-cta { display: none !important; }
+  .site-nav { display: none !important; width: 100%; order: 3; }
+  .site-nav.is-open { display: flex !important; }
   .hero { grid-template-columns: 1fr; gap: 30px; padding: 40px 0; }
   .hero h1 { font-size: 43px; }
   .hero-description { max-width: 100%; }

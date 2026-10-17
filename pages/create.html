@@ -7,15 +7,21 @@
   <title>Capsule Creation Studio — Chronicle</title>
   <link rel="stylesheet" href="../assets/css/common.css" />
   <link rel="stylesheet" href="../assets/css/member1.css" />
+  <script src="../assets/js/common.js"></script>
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
   <header class="site-header member-header">
     <div class="header-inner">
       <a class="site-logo" href="discover.html" aria-label="Chronicle home">Chronicle<span>.</span></a>
-      <nav class="site-nav" aria-label="Main navigation">
+      <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+      <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
         <a href="discover.html">Discover</a>
-        <a href="discover.html#how-it-works">How it works</a>
+        <a href="create.html" class="active" aria-current="page">Create</a>
+        <a href="vault.html">My Vault</a>
+        <a href="seal.html">Seal</a>
+        <a href="journey.html">Journey</a>
+        <a href="login.html" class="nav-signout">Sign In</a>
       </nav>
       <a class="btn btn-primary header-cta" href="create.html" aria-current="page">Create capsule <span aria-hidden="true">↗</span></a>
     </div>
@@ -138,12 +144,11 @@
     <h2 id="next-step-title">Ready for the next chapter.</h2>
     <p>Your capsule is ready for recipient selection. It has <strong>not</strong> been sealed or sent.</p>
     <dl class="handoff-summary"><div><dt>Capsule</dt><dd id="ready-title"></dd></div><div><dt>Unlock date</dt><dd id="ready-date"></dd></div></dl>
-    <p class="handoff-note">Member 2's Recipient &amp; Seal page isn't included in this demo. The saved draft can be connected to that page when your team combines the project.</p>
-    <div class="dialog-actions"><button type="button" id="download-draft" class="btn btn-outline">Download draft</button><button type="button" id="keep-editing" class="btn btn-primary">Keep editing</button></div>
+    <p class="handoff-note">Your capsule is saved and ready for recipient selection and sealing.</p>
+    <div class="dialog-actions"><button type="button" id="download-draft" class="btn btn-outline">Download draft</button><a href="seal.html" class="btn btn-primary">Proceed to Seal Capsule →</a></div>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <footer class="site-footer member-footer"><div class="footer-inner"><p>Made today. Meaningful tomorrow.</p><p>&copy; 2026 Chronicle. All rights reserved.</p></div></footer>
-  <script src="../assets/js/common.js"></script>
   <script src="../assets/js/create.js"></script>
 </body>
 </html>

@@ -413,6 +413,41 @@ html, body {
     color: #b71c1c;
   }
 
+  /* Header Inner for pages with header-inner wrapper (discover.html, create.html) */
+  .member-header {
+    min-height: auto !important;
+    padding: 0.875rem 1.25rem !important;
+  }
+
+  .header-inner {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    gap: 0 !important;
+  }
+
+  .header-inner .site-logo {
+    order: 1 !important;
+    font-size: 1.35rem !important;
+  }
+
+  .header-inner .nav-toggle {
+    order: 2 !important;
+    margin-left: auto !important;
+  }
+
+  .header-inner .header-cta {
+    display: none !important;
+  }
+
+  .header-inner .site-nav {
+    order: 3 !important;
+    width: 100% !important;
+    flex-basis: 100% !important;
+  }
+
   main {
     padding: 1.25rem 1rem;
   }
