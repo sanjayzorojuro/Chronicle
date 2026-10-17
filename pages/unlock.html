@@ -10,6 +10,7 @@
     <title>Unlock Capsule — Chronicle</title>
     <link rel="stylesheet" href="../assets/css/common.css" />
     <link rel="stylesheet" href="../assets/css/unlock.css" />
+    <script src="../assets/js/common.js"></script>
   </head>
   <body>
     <!-- Skip to content (Accessibility) -->
@@ -18,12 +19,13 @@
     <!-- Header -->
     <header class="site-header">
       <a href="vault.html" class="site-logo">Chronicle<span>.</span></a>
-      <nav class="site-nav" aria-label="Main navigation">
+      <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+      <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
         <a href="vault.html">My Vault</a>
         <a href="seal.html">Seal Capsule</a>
         <a href="journey.html">Journey</a>
         <a href="unlock.html" class="active" aria-current="page">Unlock</a>
-        <a href="login.html">Sign Out</a>
+        <a href="login.html" class="nav-signout">Sign Out</a>
       </nav>
     </header>
 
@@ -89,7 +91,6 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="../assets/js/common.js"></script>
     <script src="../assets/js/unlock.js"></script>
   </body>
 </html>

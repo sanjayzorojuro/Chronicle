@@ -10,6 +10,7 @@
     <title>Create Account — Chronicle</title>
     <link rel="stylesheet" href="../assets/css/common.css" />
     <link rel="stylesheet" href="../assets/css/auth.css" />
+    <script src="../assets/js/common.js"></script>
   </head>
   <body>
     <!-- Skip to content (Accessibility) -->
@@ -18,7 +19,8 @@
     <!-- Header -->
     <header class="site-header">
       <a href="vault.html" class="site-logo">Chronicle<span>.</span></a>
-      <nav class="site-nav" aria-label="Main navigation">
+      <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+      <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
         <a href="login.html">Sign In</a>
         <a href="vault.html">My Vault</a>
       </nav>
@@ -128,7 +130,6 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="../assets/js/common.js"></script>
     <script src="../assets/js/db.js"></script>
     <script src="../assets/js/auth.js"></script>
   </body>
