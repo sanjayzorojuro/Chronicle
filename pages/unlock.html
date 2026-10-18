@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="../assets/css/common.css" />
     <link rel="stylesheet" href="../assets/css/unlock.css" />
     <script src="../assets/js/common.js"></script>
+    <script>
+      if (!localStorage.getItem("chronicle_active_user")) {
+        window.location.replace("login.html");
+      }
+    </script>
   </head>
   <body>
     <!-- Skip to content (Accessibility) -->
@@ -18,14 +23,15 @@
 
     <!-- Header -->
     <header class="site-header">
-      <a href="vault.html" class="site-logo">Chronicle<span>.</span></a>
+      <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
       <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
       <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="discover.html">Discover</a>
+        <a href="create.html">Create Capsule</a>
         <a href="vault.html">My Vault</a>
-        <a href="seal.html">Seal Capsule</a>
         <a href="journey.html">Journey</a>
         <a href="unlock.html" class="active" aria-current="page">Unlock</a>
-        <a href="login.html" class="nav-signout">Sign Out</a>
+        <a href="profile.html">Profile</a>
       </nav>
     </header>
 
@@ -43,6 +49,15 @@
 
       <!-- Capsule Content (hidden until unlocked) -->
       <article id="capsule-content" class="capsule-content card" aria-label="Capsule contents">
+        <!-- Email Notification Dispatch Verification Banner -->
+        <div id="email-dispatch-notice" class="email-dispatch-box" style="margin-bottom: 1.25rem; padding: 0.85rem 1.15rem; background: #f0fdf4; border: 1px solid #86efac; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.5rem;" aria-hidden="true">📧</span>
+          <div>
+            <strong style="color: #15803d; font-size: 0.9rem; display: block;">Arrival Dispatch Email Verified & Sent</strong>
+            <span id="email-dispatch-detail" style="color: #166534; font-size: 0.825rem;">An official unlock arrival dispatch was verified and delivered to <strong id="dispatch-recipient-email">your email</strong>.</span>
+          </div>
+        </div>
+
         <h1 id="cap-title" class="capsule-title"></h1>
 
         <div class="capsule-meta">
@@ -69,10 +84,12 @@
         <!-- Message -->
         <div id="cap-message" class="capsule-message"></div>
 
-        <!-- Attachment (optional) -->
+        <!-- Attachment (interactive modal instead of external link) -->
         <div id="cap-attachment" class="capsule-attachment" style="display: none;">
-          <strong>Attachment</strong>
-          <a id="cap-link" href="#" target="_blank" rel="noopener noreferrer">View Attachment</a>
+          <strong>Capsule Attachments</strong>
+          <button type="button" id="btn-open-album" class="btn btn-outline btn-album">
+            📷 Open Attached Photo Album
+          </button>
         </div>
 
         <hr class="capsule-divider" />
@@ -85,12 +102,38 @@
       </article>
     </main>
 
+    <!-- Photo Album Modal (Displays inside app, no broken external redirects) -->
+    <div id="album-modal" class="album-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="album-modal-title" style="display: none;">
+      <div class="album-modal-card card">
+        <div class="album-modal-header">
+          <div>
+            <span class="album-eyebrow">MEMORY ARCHIVE</span>
+            <h2 id="album-modal-title">Attached Photo Album</h2>
+          </div>
+          <button type="button" class="btn-close-album" id="btn-close-album" aria-label="Close photo album">✕</button>
+        </div>
+
+        <p class="album-intro">
+          Preserved memories sealed in this capsule by <strong id="album-author">Mounika Shetty</strong>.
+        </p>
+
+        <div class="album-gallery" id="album-gallery">
+          <!-- Dynamically populated by unlock.js -->
+        </div>
+
+        <div class="album-modal-footer">
+          <button type="button" class="btn btn-primary" id="btn-dismiss-album">Close Album</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="site-footer">
       <p>&copy; 2026 Chronicle. All rights reserved.</p>
     </footer>
 
     <!-- Scripts -->
+    <script src="../assets/js/db.js"></script>
     <script src="../assets/js/unlock.js"></script>
   </body>
 </html>

@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="../assets/css/common.css" />
     <link rel="stylesheet" href="../assets/css/vault.css" />
     <script src="../assets/js/common.js"></script>
+    <script>
+      if (!localStorage.getItem("chronicle_active_user")) {
+        window.location.replace("login.html");
+      }
+    </script>
   </head>
   <body>
     <!-- Skip to content (Accessibility) -->
@@ -18,14 +23,15 @@
 
     <!-- Header -->
     <header class="site-header">
-      <a href="vault.html" class="site-logo">Chronicle<span>.</span></a>
+      <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
       <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
       <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="discover.html">Discover</a>
+        <a href="create.html">Create Capsule</a>
         <a href="vault.html" class="active" aria-current="page">My Vault</a>
-        <a href="seal.html">Seal Capsule</a>
         <a href="journey.html">Journey</a>
         <a href="unlock.html">Unlock</a>
-        <a href="login.html" class="nav-signout">Sign Out</a>
+        <a href="profile.html">Profile</a>
       </nav>
     </header>
 
@@ -41,7 +47,7 @@
           <p>Your secure repository of encrypted future memories, scheduled letters, and time chains.</p>
         </div>
         <div class="hero-actions">
-          <a href="seal.html" class="btn btn-primary">+ New Capsule</a>
+          <a href="create.html" class="btn btn-primary">+ New Capsule</a>
         </div>
       </section>
 
@@ -156,7 +162,7 @@
           <div class="empty-icon" aria-hidden="true">📦</div>
           <h2>No Capsules Found</h2>
           <p id="empty-desc">No capsules match your current search and filter criteria.</p>
-          <a href="seal.html" class="btn btn-primary">Seal a New Capsule</a>
+          <a href="create.html" class="btn btn-primary">Seal a New Capsule</a>
         </div>
       </section>
     </main>

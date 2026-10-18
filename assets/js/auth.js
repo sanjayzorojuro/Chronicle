@@ -1,80 +1,107 @@
-/* ===========================
+/* ==========================================================
    CHRONICLE — Auth JS
-   Login & Registration validation & state
-   =========================== */
+   Strict Authentication & Registration Validation
+   ========================================================== */
 
-var defaultAuthUsers = [
-  { id: 1, username: "daron.john", name: "Daron John", email: "daron@example.com", avatar: "DJ" },
-  { id: 2, username: "sanjay.patil", name: "Sanjay Patil", email: "sanjay@example.com", avatar: "SP" },
-  { id: 3, username: "mounika.shetty", name: "Mounika Shetty", email: "mounika@example.com", avatar: "MS" },
-  { id: 4, username: "kishan.kumar", name: "Kishan Kumar", email: "kishan@example.com", avatar: "KK" },
-  { id: 5, username: "ananya.rao", name: "Ananya Rao", email: "ananya@example.com", avatar: "AR" }
-];
+// Empty user database — accounts are created through the Registration page
+var defaultAuthUsers = [];
+
+// RFC 5322 compliant email regex
+var EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /**
  * Handle Login Form Submission
+ * Only logs in if user exists in the registered database and password matches
  */
 function handleLogin(event) {
   event.preventDefault();
 
   var usernameInput = document.getElementById("username");
   var passwordInput = document.getElementById("password");
+  var groupUsername = document.getElementById("group-username");
+  var groupPassword = document.getElementById("group-password");
+  var usernameError = document.getElementById("username-error");
+  var passwordError = document.getElementById("password-error");
 
   var username = usernameInput ? usernameInput.value.trim().toLowerCase() : "";
-  var password = passwordInput ? passwordInput.value.trim() : "";
+  var password = passwordInput ? passwordInput.value : "";
 
   var hasError = false;
 
-  // Validate Username
-  var groupUsername = document.getElementById("group-username");
+  // Reset errors
+  if (groupUsername) groupUsername.classList.remove("has-error");
+  if (groupPassword) groupPassword.classList.remove("has-error");
+
   if (!username) {
     if (groupUsername) groupUsername.classList.add("has-error");
+    if (usernameError) usernameError.textContent = "Please enter your username or email.";
     hasError = true;
-  } else {
-    if (groupUsername) groupUsername.classList.remove("has-error");
   }
 
-  // Validate Password
-  var groupPassword = document.getElementById("group-password");
   if (!password) {
     if (groupPassword) groupPassword.classList.add("has-error");
+    if (passwordError) passwordError.textContent = "Please enter your password.";
     hasError = true;
-  } else {
-    if (groupPassword) groupPassword.classList.remove("has-error");
   }
 
   if (hasError) return;
 
-  // Find or create session profile
+  // Check against registered users database
   var registeredUsers = getRegisteredUsers();
   var matchedUser = registeredUsers.find(function (u) {
-    return u.username.toLowerCase() === username || u.email.toLowerCase() === username;
+    return (
+      (u.username && u.username.toLowerCase() === username) ||
+      (u.email && u.email.toLowerCase() === username)
+    );
   });
 
-  var sessionUser = matchedUser || {
-    id: Date.now(),
-    username: username,
-    name: username.charAt(0).toUpperCase() + username.slice(1),
-    email: username + "@example.com",
-    avatar: username.slice(0, 2).toUpperCase()
+  // Strict check: User MUST exist in database
+  if (!matchedUser) {
+    if (groupUsername) groupUsername.classList.add("has-error");
+    if (usernameError) {
+      usernameError.textContent = "No account found with this username or email. Please register first.";
+    }
+    showToast("User not found. Please create a new account to continue.", "info", 4000);
+    return;
+  }
+
+  // Strict check: Password verification
+  if (matchedUser.password && matchedUser.password !== password) {
+    if (groupPassword) groupPassword.classList.add("has-error");
+    if (passwordError) {
+      passwordError.textContent = "Incorrect password. Please try again.";
+    }
+    showToast("Incorrect password. Please verify your credentials.", "info", 3500);
+    return;
+  }
+
+  // Session user object (omit raw password from session storage for security)
+  var dbUser = (typeof ChronicleDB !== "undefined" && ChronicleDB.findUser) ? ChronicleDB.findUser(matchedUser.username) : null;
+  var sessionUser = {
+    id: (dbUser && dbUser.user_id) ? dbUser.user_id : (matchedUser.id || matchedUser.user_id || Date.now()),
+    username: matchedUser.username,
+    name: matchedUser.name || matchedUser.full_name || matchedUser.username,
+    email: matchedUser.email,
+    avatar: matchedUser.avatar || matchedUser.username.slice(0, 2).toUpperCase()
   };
 
-  // Save session
+  // Save active authenticated session
   try {
     localStorage.setItem("chronicle_active_user", JSON.stringify(sessionUser));
   } catch (e) {
     console.warn("Storage warning:", e);
   }
 
-  showToast("Welcome back, " + sessionUser.name + "! Unlocking vault...", "success", 2000);
+  showToast("Welcome back, " + sessionUser.name + "! Opening Chronicle...", "success", 2000);
 
   setTimeout(function () {
-    window.location.href = "vault.html";
+    window.location.href = "discover.html";
   }, 750);
 }
 
 /**
  * Handle Registration Form Submission
+ * Requires real valid email and prevents duplicate accounts
  */
 function handleRegister(event) {
   event.preventDefault();
@@ -86,6 +113,25 @@ function handleRegister(event) {
   var confirmInput = document.getElementById("confirm-password");
   var termsCheckbox = document.getElementById("agree-terms");
 
+  var gName = document.getElementById("group-fullname");
+  var gUser = document.getElementById("group-reg-username");
+  var gEmail = document.getElementById("group-email");
+  var gPass = document.getElementById("group-reg-password");
+  var gConfirm = document.getElementById("group-confirm-password");
+
+  var nameErr = document.getElementById("fullname-error");
+  var userErr = document.getElementById("reg-username-error");
+  var emailErr = document.getElementById("email-error");
+  var passErr = document.getElementById("reg-password-error");
+  var confirmErr = document.getElementById("confirm-password-error");
+  var termsErr = document.getElementById("terms-error");
+
+  // Reset errors
+  [gName, gUser, gEmail, gPass, gConfirm].forEach(function (g) {
+    if (g) g.classList.remove("has-error");
+  });
+  if (termsErr) termsErr.style.display = "none";
+
   var name = nameInput ? nameInput.value.trim() : "";
   var username = usernameInput ? usernameInput.value.trim().toLowerCase() : "";
   var email = emailInput ? emailInput.value.trim().toLowerCase() : "";
@@ -95,152 +141,199 @@ function handleRegister(event) {
 
   var hasError = false;
 
-  // Full Name
-  var gName = document.getElementById("group-fullname");
-  if (!name) {
+  // 1. Full Name: at least 2 chars
+  if (!name || name.length < 2) {
     if (gName) gName.classList.add("has-error");
+    if (nameErr) nameErr.textContent = "Please enter your full name (at least 2 characters).";
     hasError = true;
-  } else {
-    if (gName) gName.classList.remove("has-error");
   }
 
-  // Username
-  var gUser = document.getElementById("group-reg-username");
-  if (!username || username.length < 3) {
+  // 2. Username: 3-20 alphanumeric characters, dots, underscores
+  var usernamePattern = /^[a-zA-Z0-9._]{3,20}$/;
+  if (!username || !usernamePattern.test(username)) {
     if (gUser) gUser.classList.add("has-error");
+    if (userErr) userErr.textContent = "Username must be 3-20 characters (letters, numbers, dots, underscores only).";
     hasError = true;
-  } else {
-    if (gUser) gUser.classList.remove("has-error");
   }
 
-  // Email
-  var gEmail = document.getElementById("group-email");
-  var emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!email || !emailPattern.test(email)) {
+  // 3. Email: strict format check
+  if (!email || !EMAIL_REGEX.test(email)) {
     if (gEmail) gEmail.classList.add("has-error");
+    if (emailErr) emailErr.textContent = "Please enter a valid email address (e.g. name@domain.com).";
     hasError = true;
-  } else {
-    if (gEmail) gEmail.classList.remove("has-error");
   }
 
-  // Password
-  var gPass = document.getElementById("group-reg-password");
+  // 4. Password: min 6 chars
   if (!pass || pass.length < 6) {
     if (gPass) gPass.classList.add("has-error");
+    if (passErr) passErr.textContent = "Password must be at least 6 characters long.";
     hasError = true;
-  } else {
-    if (gPass) gPass.classList.remove("has-error");
   }
 
-  // Confirm Password
-  var gConfirm = document.getElementById("group-confirm-password");
+  // 5. Confirm Password: exact match
   if (confirm !== pass) {
     if (gConfirm) gConfirm.classList.add("has-error");
+    if (confirmErr) confirmErr.textContent = "Passwords do not match.";
     hasError = true;
-  } else {
-    if (gConfirm) gConfirm.classList.remove("has-error");
   }
 
-  // Terms
-  var termsErr = document.getElementById("terms-error");
+  // 6. Terms: must accept
   if (!agree) {
     if (termsErr) termsErr.style.display = "block";
     hasError = true;
-  } else {
-    if (termsErr) termsErr.style.display = "none";
   }
 
   if (hasError) return;
 
+  // 7. Check if Username or Email is already registered
+  var registeredUsers = getRegisteredUsers();
+  var existingUser = registeredUsers.find(function (u) {
+    return u.username && u.username.toLowerCase() === username;
+  });
+  if (existingUser) {
+    if (gUser) gUser.classList.add("has-error");
+    if (userErr) userErr.textContent = "Username is already taken. Please choose another.";
+    showToast("This username is already taken.", "info", 3500);
+    return;
+  }
+
+  var existingEmail = registeredUsers.find(function (u) {
+    return u.email && u.email.toLowerCase() === email;
+  });
+  if (existingEmail) {
+    if (gEmail) gEmail.classList.add("has-error");
+    if (emailErr) emailErr.textContent = "An account with this email already exists. Please sign in.";
+    showToast("An account with this email already exists. Please sign in.", "info", 3500);
+    return;
+  }
+
+  // Build new user record with password
+  var initials = name.split(" ").map(function (n) { return n[0]; }).join("").slice(0, 2).toUpperCase() || "U";
   var newUser = {
     id: Date.now(),
     username: username,
     name: name,
     email: email,
-    avatar: name.split(" ").map(function (n) { return n[0]; }).join("").toUpperCase()
+    password: pass,
+    avatar: initials
   };
 
-  // Append to registered users list
-  if (typeof ChronicleDB !== "undefined" && ChronicleDB.addUser) {
-    ChronicleDB.addUser({
-      username: username,
-      full_name: name,
-      email: email,
-      avatar: newUser.avatar
-    });
-  }
-
-  var currentUsers = getRegisteredUsers();
-  currentUsers.push(newUser);
+  // Save to registered users database
+  registeredUsers.push(newUser);
   try {
-    localStorage.setItem("chronicle_registered_users", JSON.stringify(currentUsers));
-    localStorage.setItem("chronicle_active_user", JSON.stringify(newUser));
+    localStorage.setItem("chronicle_registered_users_v2", JSON.stringify(registeredUsers));
   } catch (e) {
     console.warn("Storage warning:", e);
   }
 
-  showToast("Account created successfully! Entering your vault...", "success", 2500);
+  // Sync with ChronicleDB if loaded
+  var dbUser = null;
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.addUser) {
+    dbUser = ChronicleDB.addUser({
+      username: username,
+      full_name: name,
+      email: email,
+      password: pass,
+      avatar: initials
+    });
+  }
+
+  // Automatically log in newly registered user
+  var sessionUser = {
+    id: (dbUser && dbUser.user_id) ? dbUser.user_id : newUser.id,
+    username: newUser.username,
+    name: newUser.name,
+    email: newUser.email,
+    avatar: newUser.avatar
+  };
+
+  try {
+    localStorage.setItem("chronicle_active_user", JSON.stringify(sessionUser));
+  } catch (e) {}
+
+  showToast("Account created successfully! Welcome to Chronicle, " + name + "!", "success", 2500);
 
   setTimeout(function () {
-    window.location.href = "vault.html";
+    window.location.href = "discover.html";
   }, 800);
 }
 
 /**
- * Retrieve registered users list from storage or defaults
+ * Retrieve registered users list from storage or defaults (merges with ChronicleDB)
  */
 function getRegisteredUsers() {
-  if (typeof ChronicleDB !== "undefined" && ChronicleDB.getUsers) {
-    var dbUsers = ChronicleDB.getUsers();
-    if (dbUsers && dbUsers.length > 0) {
-      return dbUsers.map(function (u) {
-        return {
-          id: u.user_id,
-          username: u.username,
-          name: u.full_name || u.name,
-          email: u.email,
-          avatar: u.avatar || u.username.slice(0, 2).toUpperCase()
-        };
-      });
-    }
-  }
+  var usersList = [];
   try {
-    var stored = localStorage.getItem("chronicle_registered_users");
+    var stored = localStorage.getItem("chronicle_registered_users_v2");
     if (stored) {
-      return JSON.parse(stored);
+      var parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        usersList = parsed;
+      }
     }
   } catch (e) {}
-  return defaultAuthUsers.slice();
+
+  // Merge with users in ChronicleDB (loaded from JSON seed)
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.getUsers) {
+    try {
+      var dbUsers = ChronicleDB.getUsers();
+      if (Array.isArray(dbUsers)) {
+        dbUsers.forEach(function (du) {
+          var exists = usersList.some(function (u) {
+            return (u.username && du.username && u.username.toLowerCase() === du.username.toLowerCase()) ||
+                   (u.email && du.email && u.email.toLowerCase() === du.email.toLowerCase());
+          });
+          if (!exists) {
+            usersList.push({
+              id: du.user_id || Date.now(),
+              user_id: du.user_id,
+              username: du.username,
+              name: du.full_name || du.name || du.username,
+              email: du.email,
+              password: du.password || "password123",
+              avatar: du.avatar || (du.username ? du.username.slice(0, 2).toUpperCase() : "U")
+            });
+          }
+        });
+      }
+    } catch (err) {}
+  }
+
+  return usersList;
 }
 
 /**
- * Demo autofill chips helper
+ * Password reveal toggle buttons
  */
-function setupDemoChips() {
-  var chips = document.querySelectorAll(".btn-demo-chip");
-  chips.forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var username = this.getAttribute("data-user");
-      var userInput = document.getElementById("username");
-      var passInput = document.getElementById("password");
-      if (userInput) userInput.value = username;
-      if (passInput) passInput.value = "chronicle2026";
+function setupPasswordToggles() {
+  var toggles = [
+    { btnId: "toggle-password", inputId: "password" },
+    { btnId: "toggle-reg-password", inputId: "reg-password" },
+    { btnId: "toggle-confirm-password", inputId: "confirm-password" }
+  ];
 
-      // Clear previous error states
-      var gUser = document.getElementById("group-username");
-      var gPass = document.getElementById("group-password");
-      if (gUser) gUser.classList.remove("has-error");
-      if (gPass) gPass.classList.remove("has-error");
+  toggles.forEach(function (item) {
+    var btn = document.getElementById(item.btnId);
+    var input = document.getElementById(item.inputId);
+    if (!btn || !input) return;
+
+    btn.addEventListener("click", function () {
+      var isPassword = input.type === "password";
+      input.type = isPassword ? "text" : "password";
+      btn.textContent = isPassword ? "🙈" : "👁";
+      btn.setAttribute("aria-label", isPassword ? "Hide password" : "Show password");
+      btn.setAttribute("title", isPassword ? "Hide password" : "Show password");
     });
   });
 }
 
 // Bind event handlers on load
 document.addEventListener("DOMContentLoaded", function () {
+  setupPasswordToggles();
+
   var loginForm = document.getElementById("login-form");
   if (loginForm) {
     loginForm.addEventListener("submit", handleLogin);
-    setupDemoChips();
   }
 
   var registerForm = document.getElementById("register-form");
@@ -248,12 +341,21 @@ document.addEventListener("DOMContentLoaded", function () {
     registerForm.addEventListener("submit", handleRegister);
   }
 
-  // Forgot password link stub
+  // Clear errors when typing
+  var inputs = document.querySelectorAll("input");
+  inputs.forEach(function (input) {
+    input.addEventListener("input", function () {
+      var group = this.closest(".form-group");
+      if (group) group.classList.remove("has-error");
+    });
+  });
+
+  // Forgot password link
   var forgotLink = document.getElementById("link-forgot");
   if (forgotLink) {
     forgotLink.addEventListener("click", function (e) {
       e.preventDefault();
-      showToast("Demo: Password reset instructions sent to your email.", "info", 3000);
+      showToast("Password recovery: Please register a new account or sign in with your credentials.", "info", 3500);
     });
   }
 });

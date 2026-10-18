@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Your Chronicle profile: capsule statistics, journey contributions and a timeline of your recent activity."
+    />
+    <title>Profile &amp; Activity — Chronicle</title>
+    <link rel="stylesheet" href="../assets/css/common.css" />
+    <link rel="stylesheet" href="../assets/css/profile.css" />
+    <script src="../assets/js/common.js"></script>
+    <script>
+      if (!localStorage.getItem("chronicle_active_user")) {
+        window.location.replace("login.html");
+      }
+    </script>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
+      <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+      <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="discover.html">Discover</a>
+        <a href="create.html">Create Capsule</a>
+        <a href="vault.html">My Vault</a>
+        <a href="journey.html">Journey</a>
+        <a href="unlock.html">Unlock</a>
+        <a href="profile.html" class="active" aria-current="page">Profile</a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section id="signin-prompt" class="card" style="display: none; text-align: center">
+        <h1>Sign in to see your profile</h1>
+        <p style="color: var(--color-text-secondary); margin: 0.5rem 0 1.25rem">Your capsule stats and activity appear here once you are signed in.</p>
+        <a href="login.html" class="btn btn-primary">Sign in</a>
+      </section>
+
+      <div id="profile-content">
+
+      <section class="profile-card card" aria-label="User details">
+        <div class="profile-avatar" id="pf-avatar" aria-hidden="true">--</div>
+        <div class="profile-info">
+          <h1 id="pf-name">Your Name</h1>
+          <p class="profile-handle" id="pf-username"></p>
+          <p class="profile-email" id="pf-email"></p>
+        </div>
+        <div class="profile-actions" style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+          <a href="vault.html" class="btn btn-outline">Go to My Vault</a>
+          <button type="button" id="btn-profile-signout" class="btn" style="background:#fee2e2;color:#b91c1c;border:1px solid #fca5a5;padding:0.6rem 1.15rem;font-weight:600;border-radius:var(--radius);cursor:pointer;">
+            🚪 Sign Out
+          </button>
+        </div>
+      </section>
+
+      <section class="stats-grid" aria-label="Capsule statistics">
+        <div class="stat-card">
+          <span class="stat-number" id="pf-created">0</span>
+          <span class="stat-label">Capsules Created</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="pf-received">0</span>
+          <span class="stat-label">Received</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="pf-opened">0</span>
+          <span class="stat-label">Opened</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number" id="pf-journeys">0</span>
+          <span class="stat-label">Journey Contributions</span>
+        </div>
+      </section>
+
+      <section class="card activity-card" aria-label="Recent activity">
+        <div class="activity-head">
+          <h2>Recent Activity</h2>
+          <div class="activity-filter" role="group" aria-label="Filter activity">
+            <button type="button" class="chip active" data-type="all">All</button>
+            <button type="button" class="chip" data-type="created">Created</button>
+            <button type="button" class="chip" data-type="opened">Opened</button>
+            <button type="button" class="chip" data-type="journey">Journey</button>
+          </div>
+        </div>
+        <ol id="activity-list" class="timeline"></ol>
+        <p id="activity-empty" class="timeline-empty" style="display: none">No activity of this type yet. <a href="create.html">Seal your first capsule</a>.</p>
+      </section>
+
+      <section class="card activity-card share-card" aria-label="Share on the Time Wall">
+        <h2>Share on the Time Wall</h2>
+        <p class="share-note">Capsules you created that have already unlocked can be made public.</p>
+        <ul id="share-list" class="share-list"></ul>
+        <p id="share-empty" class="timeline-empty" style="display: none">None of your capsules have unlocked yet.</p>
+      </section>
+      </div>
+    </main>
+
+    <!-- Sign Out Confirmation Modal -->
+    <div id="signout-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="signout-modal-title" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+      <div class="card" style="max-width: 420px; width: 100%; text-align: center; padding: 2rem; background: var(--color-white); border-radius: 12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);">
+        <div style="font-size: 2.75rem; margin-bottom: 0.75rem;" aria-hidden="true">🚪</div>
+        <h2 id="signout-modal-title" style="font-size: 1.35rem; font-weight: 700; margin: 0 0 0.5rem; color: var(--color-text);">Sign Out of Chronicle?</h2>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem; margin: 0 0 1.5rem; line-height: 1.5;">
+          Are you sure you want to sign out? Your sealed capsules, vault memories, and journeys are saved safely and will be waiting when you return.
+        </p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+          <button type="button" id="btn-cancel-signout" class="btn btn-outline" style="min-width: 110px;">Cancel</button>
+          <button type="button" id="btn-confirm-signout" class="btn btn-primary" style="min-width: 110px; background: #dc2626; border-color: #dc2626; color: #ffffff;">Yes, Sign Out</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <footer class="site-footer">
+      <p>&copy; 2026 Chronicle. All rights reserved.</p>
+    </footer>
+
+    <script src="../assets/js/db.js"></script>
+    <script src="../assets/js/profile.js"></script>
+  </body>
+</html>

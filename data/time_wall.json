@@ -1,0 +1,53 @@
+{
+  "database_info": {
+    "name": "Chronicle Time Wall Sample Data",
+    "description": "Sample public capsules that have already unlocked. Same field names as the capsules table in chronicle_db.json."
+  },
+  "capsules": [
+    {
+      "capsule_id": "WALL-001",
+      "creator_name": "Meera Iyer",
+      "title": "To whoever needs to hear this",
+      "message": "You are doing better than you think. The things that feel impossible today will be a story you tell later. Keep going.",
+      "category": "Friendship",
+      "unlock_date": "2025-03-14T09:00:00Z",
+      "is_public": true
+    },
+    {
+      "capsule_id": "WALL-002",
+      "creator_name": "Vikram Shenoy",
+      "title": "Our last day of college",
+      "message": "We promised we would meet here again. If you are reading this, I hope all of us showed up. Bring chai.",
+      "category": "Memories",
+      "unlock_date": "2025-05-30T10:00:00Z",
+      "is_public": true
+    },
+    {
+      "capsule_id": "WALL-003",
+      "creator_name": "Isha Kapoor",
+      "title": "A note on stubborn dreams",
+      "message": "I started learning guitar today. By the time you read this I hope I can play at least one song without looking at my fingers.",
+      "category": "Personal",
+      "unlock_date": "2026-06-21T18:00:00Z",
+      "is_public": true
+    },
+    {
+      "capsule_id": "WALL-004",
+      "creator_name": "Neil D'Souza",
+      "title": "Open when you finish your first job",
+      "message": "Remember the nervous version of you who rehearsed introductions in the mirror. Be kind to them. They got you here.",
+      "category": "Milestone",
+      "unlock_date": "2026-08-09T08:00:00Z",
+      "is_public": true
+    },
+    {
+      "capsule_id": "WALL-005",
+      "creator_name": "Tara Bhat",
+      "title": "Monsoon of 2025",
+      "message": "It rained for nine days straight and we still walked to the beach. Never let anyone tell you that was a bad idea.",
+      "category": "Memories",
+      "unlock_date": "2026-09-02T07:00:00Z",
+      "is_public": true
+    }
+  ]
+}

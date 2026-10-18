@@ -7,20 +7,23 @@
   <title>Discover Chronicle — A little now. A lot later.</title>
   <link rel="stylesheet" href="../assets/css/common.css" />
   <link rel="stylesheet" href="../assets/css/member1.css" />
+  <script src="../assets/js/common.js"></script>
 </head>
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
-  <!-- The shared header follows the style of the uploaded pages. -->
-  <header class="site-header member-header">
-    <div class="header-inner">
-      <a class="site-logo" href="discover.html" aria-label="Chronicle home">Chronicle<span>.</span></a>
-      <nav class="site-nav" aria-label="Main navigation">
-        <a href="discover.html" class="active" aria-current="page">Discover</a>
-        <a href="#how-it-works">How it works</a>
-      </nav>
-      <a class="btn btn-primary header-cta" href="create.html">Create capsule <span aria-hidden="true">↗</span></a>
-    </div>
+  <!-- Shared Header -->
+  <header class="site-header">
+    <a class="site-logo" href="discover.html" aria-label="Chronicle home">Chronicle<span>.</span></a>
+    <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+    <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+      <a href="discover.html" class="active" aria-current="page">Discover</a>
+      <a href="create.html">Create Capsule</a>
+      <a href="vault.html">My Vault</a>
+      <a href="journey.html">Journey</a>
+      <a href="unlock.html">Unlock</a>
+      <a href="profile.html">Profile</a>
+    </nav>
   </header>
 
   <main id="main-content" class="member-main discover-main">

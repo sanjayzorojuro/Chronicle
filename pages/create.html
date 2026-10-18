@@ -1,24 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Write a Chronicle time capsule. Add a message, an optional photo or link, and a future unlock date." />
+  <meta name="description"
+    content="Write a Chronicle time capsule. Add a message, an optional photo or link, and a future unlock date." />
   <title>Capsule Creation Studio — Chronicle</title>
   <link rel="stylesheet" href="../assets/css/common.css" />
   <link rel="stylesheet" href="../assets/css/member1.css" />
+  <script src="../assets/js/common.js"></script>
+  <script>
+    if (!localStorage.getItem("chronicle_active_user")) {
+      window.location.replace("login.html");
+    }
+  </script>
 </head>
+
 <body>
   <a href="#main-content" class="skip-link">Skip to main content</a>
-  <header class="site-header member-header">
-    <div class="header-inner">
-      <a class="site-logo" href="discover.html" aria-label="Chronicle home">Chronicle<span>.</span></a>
-      <nav class="site-nav" aria-label="Main navigation">
-        <a href="discover.html">Discover</a>
-        <a href="discover.html#how-it-works">How it works</a>
-      </nav>
-      <a class="btn btn-primary header-cta" href="create.html" aria-current="page">Create capsule <span aria-hidden="true">↗</span></a>
-    </div>
+  <header class="site-header">
+    <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
+    <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+    <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+      <a href="discover.html">Discover</a>
+      <a href="create.html" class="active" aria-current="page">Create Capsule</a>
+      <a href="vault.html">My Vault</a>
+      <a href="journey.html">Journey</a>
+      <a href="unlock.html">Unlock</a>
+      <a href="profile.html">Profile</a>
+    </nav>
   </header>
 
   <main id="main-content" class="member-main studio-main">
@@ -39,19 +50,30 @@
     <div class="studio-grid">
       <!-- Member 1 collects the content; Member 2 will choose recipients and seal it. -->
       <form id="capsule-form" class="card studio-form" novalidate>
-        <div class="form-heading"><h2>Make it yours</h2><p>Fields marked <span class="required-mark">*</span> are required.</p></div>
-        <p id="form-summary" class="form-summary" role="alert" hidden>Please check the highlighted fields before continuing.</p>
+        <div class="form-heading">
+          <h2>Make it yours</h2>
+          <p>Fields marked <span class="required-mark">*</span> are required.</p>
+        </div>
+        <p id="form-summary" class="form-summary" role="alert" hidden>Please check the highlighted fields before
+          continuing.</p>
 
         <div class="form-group">
-          <div class="label-row"><label for="capsule-title">Capsule title <span class="required-mark" aria-hidden="true">*</span></label><span id="title-count" class="character-count">0 / 80</span></div>
-          <input type="text" id="capsule-title" name="title" placeholder="e.g. A letter to my future self" maxlength="80" required aria-describedby="capsule-title-error" />
+          <div class="label-row"><label for="capsule-title">Capsule title <span class="required-mark"
+                aria-hidden="true">*</span></label><span id="title-count" class="character-count">0 / 80</span></div>
+          <input type="text" id="capsule-title" name="title" placeholder="e.g. A letter to my future self"
+            maxlength="80" required aria-describedby="capsule-title-error" />
           <span id="capsule-title-error" class="error-msg" role="alert"></span>
         </div>
 
         <div class="form-group">
           <label for="capsule-message">Your message <span class="required-mark" aria-hidden="true">*</span></label>
-          <textarea id="capsule-message" name="message" rows="7" maxlength="5000" placeholder="Dear future me,&#10;&#10;Here's something I don't want you to forget…" required aria-describedby="message-hint capsule-message-error"></textarea>
-          <div class="field-bottom"><p id="message-hint" class="field-hint">A memory, a wish, or just a few honest words.</p><span id="message-count" class="character-count">0 / 5,000</span></div>
+          <textarea id="capsule-message" name="message" rows="7" maxlength="5000"
+            placeholder="Dear future me,&#10;&#10;Here's something I don't want you to forget…" required
+            aria-describedby="message-hint capsule-message-error"></textarea>
+          <div class="field-bottom">
+            <p id="message-hint" class="field-hint">A memory, a wish, or just a few honest words.</p><span
+              id="message-count" class="character-count">0 / 5,000</span>
+          </div>
           <span id="capsule-message-error" class="error-msg" role="alert"></span>
         </div>
 
@@ -71,7 +93,8 @@
           </div>
           <div class="form-group">
             <label for="unlock-date">Unlock date <span class="required-mark" aria-hidden="true">*</span></label>
-            <input type="date" id="unlock-date" name="unlockDate" required aria-describedby="date-hint unlock-date-error" />
+            <input type="date" id="unlock-date" name="unlockDate" required
+              aria-describedby="date-hint unlock-date-error" />
             <div class="date-shortcuts" aria-label="Quick unlock dates">
               <button type="button" data-months="1" aria-pressed="false">1 month</button>
               <button type="button" data-months="6" aria-pressed="false">6 months</button>
@@ -83,30 +106,41 @@
         </div>
 
         <details id="optional-extras" class="optional-extras">
-          <summary><span>Add an image or link <span class="optional-label">Optional</span></span><span class="details-plus" aria-hidden="true">+</span></summary>
+          <summary><span>Add an image or link <span class="optional-label">Optional</span></span><span
+              class="details-plus" aria-hidden="true">+</span></summary>
           <div class="extras-body">
             <div class="form-group">
               <label for="capsule-image">A photo to remember</label>
-              <input type="file" id="capsule-image" name="image" accept="image/jpeg,image/png,image/webp" aria-describedby="image-hint capsule-image-error" />
+              <input type="file" id="capsule-image" name="image" accept="image/jpeg,image/png,image/webp"
+                aria-describedby="image-hint capsule-image-error" />
               <p id="image-hint" class="field-hint">JPG, PNG or WebP. Maximum 2 MB.</p>
-              <div id="selected-image" class="selected-image" hidden><span id="image-name"></span><button type="button" id="remove-image" class="text-button">Remove</button></div>
+              <div id="selected-image" class="selected-image" hidden><span id="image-name"></span><button type="button"
+                  id="remove-image" class="text-button">Remove</button></div>
               <span id="capsule-image-error" class="error-msg" role="alert"></span>
             </div>
             <div class="form-group">
               <label for="capsule-link">A meaningful link</label>
-              <input type="url" id="capsule-link" name="link" placeholder="https://example.com/your-memory" maxlength="2048" aria-describedby="link-hint capsule-link-error" />
+              <input type="url" id="capsule-link" name="link" placeholder="https://example.com/your-memory"
+                maxlength="2048" aria-describedby="link-hint capsule-link-error" />
               <p id="link-hint" class="field-hint">An album, a video, or something you'd like to revisit.</p>
               <span id="capsule-link-error" class="error-msg" role="alert"></span>
             </div>
           </div>
         </details>
 
-        <p class="draft-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v2" /></svg> This is a draft. You'll choose recipients and seal it next.</p>
+        <p class="draft-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="5" y="10" width="14" height="10" rx="2" />
+            <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v2" />
+          </svg> This is a draft. You'll choose recipients and seal it next.</p>
         <div class="form-actions">
           <button type="button" id="save-draft" class="btn btn-outline">Save draft</button>
-          <button type="submit" id="continue-button" class="btn btn-primary">Continue <span aria-hidden="true">→</span></button>
+          <button type="submit" id="continue-button" class="btn btn-primary">Continue <span
+              aria-hidden="true">→</span></button>
         </div>
-        <div class="draft-status-row"><p id="draft-status" role="status" aria-live="polite">Not saved yet.</p><button type="button" id="reset-draft" class="text-button">Start over</button></div>
+        <div class="draft-status-row">
+          <p id="draft-status" role="status" aria-live="polite">Not saved yet.</p><button type="button" id="reset-draft"
+            class="text-button">Start over</button>
+        </div>
         <p class="demo-note">Front-end demo: drafts stay in this browser. No messages are sent or locked.</p>
       </form>
 
@@ -116,16 +150,38 @@
           <p class="eyebrow">A PEEK INTO YOUR CAPSULE</p>
           <p class="preview-intro">Your words, ready for their next chapter.</p>
           <article class="preview-paper">
-            <div class="preview-paper-top"><span class="preview-badge"><span class="small-dot" aria-hidden="true"></span> DRAFT · NOT SEALED</span><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM4 6l8 7 8-7" /></svg></div>
+            <div class="preview-paper-top"><span class="preview-badge"><span class="small-dot"
+                  aria-hidden="true"></span> DRAFT · NOT SEALED</span><svg class="icon" viewBox="0 0 24 24"
+                aria-hidden="true">
+                <path d="M4 5h16v14H4zM4 6l8 7 8-7" />
+              </svg></div>
             <h2 id="preview-title">Your story starts here.</h2>
-            <p id="preview-message" class="preview-message">A few words today can mean a whole lot tomorrow. Your message will appear here as you write.</p>
+            <p id="preview-message" class="preview-message">A few words today can mean a whole lot tomorrow. Your
+              message will appear here as you write.</p>
             <img id="preview-image" class="preview-image" alt="Your attached photo" hidden />
-            <a id="preview-link" class="preview-link" target="_blank" rel="noopener noreferrer" hidden>↗ A link to revisit</a>
-            <dl class="preview-meta"><div><dt>Category</dt><dd id="preview-category">Not selected</dd></div><div><dt>Opens on</dt><dd id="preview-date">Choose a date</dd></div></dl>
+            <a id="preview-link" class="preview-link" target="_blank" rel="noopener noreferrer" hidden>↗ A link to
+              revisit</a>
+            <dl class="preview-meta">
+              <div>
+                <dt>Category</dt>
+                <dd id="preview-category">Not selected</dd>
+              </div>
+              <div>
+                <dt>Opens on</dt>
+                <dd id="preview-date">Choose a date</dd>
+              </div>
+            </dl>
           </article>
-          <p id="preview-countdown" class="preview-countdown"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8" /><path d="M12 7v5l3 2" /></svg><span id="countdown-text">A future date makes it a time capsule.</span></p>
+          <p id="preview-countdown" class="preview-countdown"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="8" />
+              <path d="M12 7v5l3 2" />
+            </svg><span id="countdown-text">A future date makes it a time capsule.</span></p>
         </div>
-        <div class="writing-tip"><p class="eyebrow">NOT SURE WHERE TO START?</p><p>Describe a little win, a big hope, or one thing you never want to forget. It doesn't have to be perfect.</p></div>
+        <div class="writing-tip">
+          <p class="eyebrow">NOT SURE WHERE TO START?</p>
+          <p>Describe a little win, a big hope, or one thing you never want to forget. It doesn't have to be perfect.
+          </p>
+        </div>
       </aside>
     </div>
   </main>
@@ -137,13 +193,32 @@
     <p class="eyebrow">DRAFT SAVED</p>
     <h2 id="next-step-title">Ready for the next chapter.</h2>
     <p>Your capsule is ready for recipient selection. It has <strong>not</strong> been sealed or sent.</p>
-    <dl class="handoff-summary"><div><dt>Capsule</dt><dd id="ready-title"></dd></div><div><dt>Unlock date</dt><dd id="ready-date"></dd></div></dl>
-    <p class="handoff-note">Member 2's Recipient &amp; Seal page isn't included in this demo. The saved draft can be connected to that page when your team combines the project.</p>
-    <div class="dialog-actions"><button type="button" id="download-draft" class="btn btn-outline">Download draft</button><button type="button" id="keep-editing" class="btn btn-primary">Keep editing</button></div>
+    <dl class="handoff-summary">
+      <div>
+        <dt>Capsule</dt>
+        <dd id="ready-title"></dd>
+      </div>
+      <div>
+        <dt>Unlock date</dt>
+        <dd id="ready-date"></dd>
+      </div>
+    </dl>
+    <p class="handoff-note">Your capsule draft is safely saved. Choose your recipient and apply the cryptographic wax seal.</p>
+    <div class="dialog-actions">
+      <a href="seal.html" class="btn btn-primary">Proceed to Seal Capsule →</a>
+      <button type="button" id="download-draft" class="btn btn-outline">Download draft</button>
+      <button type="button" id="keep-editing" class="btn btn-outline">Keep editing</button>
+    </div>
   </dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <footer class="site-footer member-footer"><div class="footer-inner"><p>Made today. Meaningful tomorrow.</p><p>&copy; 2026 Chronicle. All rights reserved.</p></div></footer>
+  <footer class="site-footer member-footer">
+    <div class="footer-inner">
+      <p>Made today. Meaningful tomorrow.</p>
+      <p>&copy; 2026 Chronicle. All rights reserved.</p>
+    </div>
+  </footer>
   <script src="../assets/js/common.js"></script>
   <script src="../assets/js/create.js"></script>
 </body>
+
 </html>

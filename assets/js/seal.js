@@ -3,15 +3,8 @@
    Recipient selection + Wax Seal sequence
    =========================== */
 
-// Mock registered users list (aligned with project team & synopsis)
-var registeredUsers = [
-  { id: 1, username: "mounika.shetty", name: "Mounika Shetty", avatar: "MS" },
-  { id: 2, username: "sanjay.patil", name: "Sanjay Patil", avatar: "SP" },
-  { id: 3, username: "kishan.kumar", name: "Kishan Kumar", avatar: "KK" },
-  { id: 4, username: "ananya.rao", name: "Ananya Rao", avatar: "AR" },
-  { id: 5, username: "rahul.nair", name: "Rahul Nair", avatar: "RN" },
-  { id: 6, username: "daron.john", name: "Daron John (You)", avatar: "DJ" }
-];
+// Clean registered users list — loaded dynamically from database
+var registeredUsers = [];
 
 // Active state
 var currentDraft = {
@@ -73,7 +66,11 @@ function handleModeChange(mode) {
   if (mode === "myself") {
     if (labelMyself) labelMyself.classList.add("active");
     if (selectorGroup) selectorGroup.style.display = "none";
-    selectedRecipients = [{ username: "daron.john", name: "Myself (Daron John)" }];
+    var active = typeof getActiveUser === "function" ? getActiveUser() : null;
+    var myName = active ? (active.name || active.full_name || active.username) : "Myself";
+    var myUser = active ? active.username : "you";
+    var myId = active ? (active.id || active.user_id || 1) : 1;
+    selectedRecipients = [{ id: myId, username: myUser, name: "Myself (" + myName + ")" }];
   } else if (mode === "single") {
     if (labelSingle) labelSingle.classList.add("active");
     if (selectorGroup) selectorGroup.style.display = "block";
@@ -139,20 +136,54 @@ function handleUserSearch(query) {
     return;
   }
 
-  var matches = registeredUsers.filter(function (u) {
+  var active = typeof getActiveUser === "function" ? getActiveUser() : null;
+  var myUser = active ? (active.username || "").toLowerCase() : "";
+  var allUsers = [];
+
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.getUsers) {
+    try {
+      var dbUsers = ChronicleDB.getUsers();
+      dbUsers.forEach(function (du) {
+        if (!allUsers.some(function (u) { return (u.username || "").toLowerCase() === (du.username || "").toLowerCase(); })) {
+          allUsers.push({
+            id: du.user_id,
+            username: du.username,
+            name: du.full_name || du.username,
+            avatar: du.avatar || du.username.slice(0, 2).toUpperCase()
+          });
+        }
+      });
+    } catch (e) {}
+  }
+
+  try {
+    var storedUsers = JSON.parse(localStorage.getItem("chronicle_registered_users_v2") || "[]");
+    storedUsers.forEach(function (su) {
+      if (!allUsers.some(function (u) { return (u.username || "").toLowerCase() === (su.username || "").toLowerCase(); })) {
+        allUsers.push({
+          id: su.id,
+          username: su.username,
+          name: su.name || su.username,
+          avatar: su.avatar || su.username.slice(0, 2).toUpperCase()
+        });
+      }
+    });
+  } catch (e) {}
+
+  var matches = allUsers.filter(function (u) {
     // Exclude currently logged in user if sending to others
-    if (u.username === "daron.john") return false;
+    if (myUser && u.username && u.username.toLowerCase() === myUser) return false;
     // Exclude already selected users
     var alreadyAdded = selectedRecipients.some(function (sel) {
       return sel.username === u.username;
     });
     if (alreadyAdded) return false;
 
-    return u.username.toLowerCase().includes(query) || u.name.toLowerCase().includes(query);
+    return u.username.toLowerCase().includes(query) || (u.name && u.name.toLowerCase().includes(query));
   });
 
   if (matches.length === 0) {
-    list.innerHTML = '<li class="autocomplete-item" style="color:var(--color-text-secondary);cursor:default;">No registered users found</li>';
+    list.innerHTML = '<li class="autocomplete-item" style="color:var(--color-text-secondary);cursor:default;font-size:0.85rem;padding:0.75rem 1rem;">No other registered users found. Register another account on Chronicle to send capsules to friends.</li>';
     list.style.display = "block";
     return;
   }
@@ -234,6 +265,7 @@ function sealCapsule(event) {
   }
 
   var isPublic = document.getElementById("setting-public") ? document.getElementById("setting-public").checked : false;
+  var notifyEmail = document.getElementById("setting-notify") ? document.getElementById("setting-notify").checked : true;
   var liveRegion = document.getElementById("live-region");
 
   // Show Sealing Modal
@@ -250,12 +282,18 @@ function sealCapsule(event) {
     ? "Myself"
     : selectedRecipients.map(function (u) { return u.name; }).join(", ");
 
+  var activeUser = typeof getActiveUser === "function" ? getActiveUser() : null;
+  var creatorName = activeUser ? (activeUser.name || activeUser.full_name || activeUser.username) : (currentDraft.creator || "Myself");
+  var creatorId = activeUser ? (activeUser.id || activeUser.user_id || 1) : 1;
+  var creatorEmail = activeUser ? (activeUser.email || "") : "";
+
   var capsuleRecord = {
     id: currentDraft.id,
     title: currentDraft.title,
     message: currentDraft.message,
     category: currentDraft.category,
-    creator: "Daron John",
+    creator: creatorName,
+    creatorId: creatorId,
     recipient: recipientLabels,
     recipientMode: selectedMode,
     recipients: selectedRecipients,
@@ -263,6 +301,8 @@ function sealCapsule(event) {
     displayUnlockDate: currentDraft.displayUnlockDate || currentDraft.unlockDate,
     dateCreated: currentDraft.dateCreated,
     isPublic: isPublic,
+    notifyEmail: notifyEmail,
+    recipientEmail: creatorEmail,
     status: "sealed", // sealed | unlocked
     chainCount: 1
   };
@@ -270,11 +310,21 @@ function sealCapsule(event) {
   // Persist into localStorage vault collection
   saveCapsuleToVault(capsuleRecord);
 
+  // Clear drafts so the create form resets cleanly for the next capsule
+  try {
+    localStorage.removeItem("chronicle_current_draft");
+    localStorage.removeItem("chronicleDraft");
+    localStorage.setItem("chronicle_draft_sealed", "true");
+  } catch (e) {}
+
   // Animation progression
   setTimeout(function () {
     if (modalTitle) modalTitle.textContent = "✓ Capsule Sealed Successfully!";
     if (modalDesc) {
-      modalDesc.innerHTML = "Capsule <strong>#" + capsuleRecord.id + "</strong> is now permanently locked and encrypted.<br>Stored safely in your vault until <strong>" + escapeHTML(capsuleRecord.displayUnlockDate) + "</strong>.";
+      var emailNotice = notifyEmail
+        ? "<br><div style='margin-top:0.75rem;padding:0.6rem 0.8rem;background:#eef6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:0.85rem;color:#1e40af;'>📧 <strong>Email Notification Verified:</strong> An arrival dispatch email will be automatically delivered to <strong>" + escapeHTML(creatorEmail || "your registered email") + "</strong> on the unlock date.</div>"
+        : "";
+      modalDesc.innerHTML = "Capsule <strong>#" + capsuleRecord.id + "</strong> is now permanently locked and encrypted.<br>Stored safely in your vault until <strong>" + escapeHTML(capsuleRecord.displayUnlockDate) + "</strong>." + emailNotice;
     }
     if (modalActions) modalActions.style.display = "flex";
     if (liveRegion) liveRegion.textContent = "Capsule sealed successfully.";
@@ -286,6 +336,7 @@ function sealCapsule(event) {
  * Save record into localStorage vault collection
  */
 function saveCapsuleToVault(newCapsule) {
+  var activeUser = typeof getActiveUser === "function" ? getActiveUser() : null;
   if (typeof ChronicleDB !== "undefined" && ChronicleDB.createCapsule) {
     ChronicleDB.createCapsule(
       {
@@ -294,10 +345,12 @@ function saveCapsuleToVault(newCapsule) {
         category: newCapsule.category,
         unlock_date: newCapsule.unlockDate,
         display_unlock_date: newCapsule.displayUnlockDate,
-        is_public: newCapsule.isPublic
+        is_public: newCapsule.isPublic,
+        notify_email: newCapsule.notifyEmail
       },
       selectedRecipients,
-      selectedMode
+      selectedMode,
+      activeUser
     );
   }
   try {

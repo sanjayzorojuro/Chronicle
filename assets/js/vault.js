@@ -3,73 +3,8 @@
    Dynamic countdowns, tab filters, modal inspector
    =========================== */
 
-// Base seed data matching project synopsis & team roles
-var defaultSeedCapsules = [
-  {
-    id: "CHR-2026-001",
-    title: "Graduation Day",
-    message: "Reflecting on our journey through web technologies, late night coding sessions, and building Chronicle together. Don't forget where it all began!",
-    category: "Milestone",
-    creator: "Daron John",
-    recipient: "Myself",
-    recipientMode: "myself",
-    // 126 days from current date (as described in project synopsis)
-    unlockDate: new Date(Date.now() + 126 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
-    displayUnlockDate: "14 February 2027",
-    dateCreated: "11 October 2026",
-    isPublic: true,
-    status: "sealed",
-    chainCount: 1
-  },
-  {
-    id: "CHR-2026-002",
-    title: "Open When You're 30",
-    message: "A milestone checkpoint for your future self. Are you still coding? Have you traveled to Japan? Stay true to your principles.",
-    category: "Personal",
-    creator: "Daron John",
-    recipient: "Myself",
-    recipientMode: "myself",
-    // ~2 years from now (as described in project synopsis)
-    unlockDate: "2028-10-11",
-    displayUnlockDate: "11 October 2028",
-    dateCreated: "01 September 2026",
-    isPublic: false,
-    status: "sealed",
-    chainCount: 1
-  },
-  {
-    id: "CHR-2026-003",
-    title: "A Letter to My Future Self",
-    message: "Dear Future Me,\n\nIf you're reading this, you've made it. I hope the world is kinder now, and that you've become someone I'd be proud of.\n\nRemember the late nights, the doubts, the small wins that kept you going. None of it was wasted.\n\nKeep creating. Keep caring.\n\n— Past You",
-    category: "Friendship",
-    creator: "Mounika Shetty",
-    recipient: "Daron John",
-    recipientMode: "single",
-    // Arrived / ready to unlock (today)
-    unlockDate: new Date(Date.now() - 3600 * 1000).toISOString().split("T")[0],
-    displayUnlockDate: "Today (Ready to Unlock)",
-    dateCreated: "15 August 2026",
-    isPublic: true,
-    status: "ready",
-    chainCount: 3
-  },
-  {
-    id: "CHR-2026-004",
-    title: "Sprint Retrospective & Secret Project Milestone",
-    message: "Great work completing the 10-page Chronicle platform with 2NF MySQL database integration! Cheers to the team.",
-    category: "Milestone",
-    creator: "Sanjay Patil",
-    recipient: "Daron John",
-    recipientMode: "single",
-    // Unlocks in 2 hours for demonstration countdown
-    unlockDate: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    displayUnlockDate: "Today at 16:30",
-    dateCreated: "05 October 2026",
-    isPublic: false,
-    status: "sealed",
-    chainCount: 2
-  }
-];
+// Clean empty seed data — user-specific storage only
+var defaultSeedCapsules = [];
 
 // Active State
 var allCapsules = [];
@@ -78,26 +13,68 @@ var activeModalCapsule = null;
 var timerInterval = null;
 
 /**
- * Initialize capsule list from localStorage or seed
+ * Check if a capsule was created by the active user
+ */
+function isCapsuleCreatedByMe(cap) {
+  var active = typeof getActiveUser === "function" ? getActiveUser() : null;
+  if (!active) return false;
+  var myName = (active.name || active.full_name || "").trim().toLowerCase();
+  var myUser = (active.username || "").trim().toLowerCase();
+  var creator = (cap.creator || cap.creator_name || "").trim().toLowerCase();
+
+  if (creator === "myself" || creator === "you") return true;
+  if (myName && creator === myName) return true;
+  if (myUser && creator === myUser) return true;
+  if (cap.creatorId && active.id && String(cap.creatorId) === String(active.id)) return true;
+  return false;
+}
+
+/**
+ * Check if a capsule was sent to the active user as a recipient
+ */
+function isCapsuleSentToMe(cap) {
+  var active = typeof getActiveUser === "function" ? getActiveUser() : null;
+  if (!active) return false;
+  var myName = (active.name || active.full_name || "").trim().toLowerCase();
+  var myUser = (active.username || "").trim().toLowerCase();
+  var myEmail = (active.email || "").trim().toLowerCase();
+  var rec = (cap.recipient || "").trim().toLowerCase();
+
+  // If created by someone else and recipient label starts with "Myself", it is private to creator
+  if (rec.startsWith("myself") && !isCapsuleCreatedByMe(cap)) {
+    return false;
+  }
+
+  if (myUser && rec.includes(myUser)) return true;
+  if (myName && rec.includes(myName)) return true;
+  if (myEmail && rec.includes(myEmail)) return true;
+  return false;
+}
+
+/**
+ * Initialize capsule list from localStorage or seed (strictly filtered for active user)
  */
 function initVaultData() {
+  var activeUser = typeof getActiveUser === "function" ? getActiveUser() : null;
   if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultCapsules) {
-    allCapsules = ChronicleDB.getVaultCapsules();
+    allCapsules = ChronicleDB.getVaultCapsules(activeUser);
   } else {
     try {
       var stored = localStorage.getItem("chronicle_vault_capsules");
       if (stored) {
         var parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          allCapsules = parsed;
+          allCapsules = parsed.filter(function (c) {
+            return isCapsuleCreatedByMe(c) || isCapsuleSentToMe(c);
+          });
         } else {
-          allCapsules = defaultSeedCapsules.slice();
+          allCapsules = [];
         }
       } else {
-        allCapsules = defaultSeedCapsules.slice();
+        allCapsules = [];
       }
     } catch (err) {
-      allCapsules = defaultSeedCapsules.slice();
+      allCapsules = [];
     }
   }
 
@@ -175,7 +152,7 @@ function updateMetrics() {
       journeyCount++;
     }
 
-    var isCreatedByMe = (c.creator === "Daron John" || c.creator === "Myself");
+    var isCreatedByMe = isCapsuleCreatedByMe(c);
     if (isCreatedByMe) {
       createdCount++;
     } else {
@@ -215,7 +192,7 @@ function getFilteredCapsules() {
 
   return allCapsules.filter(function (capsule) {
     // 1. Tab Filter
-    var isCreatedByMe = (capsule.creator === "Daron John" || capsule.creator === "Myself");
+    var isCreatedByMe = isCapsuleCreatedByMe(capsule);
     if (currentTabFilter === "created" && !isCreatedByMe) return false;
     if (currentTabFilter === "received" && isCreatedByMe) return false;
 
@@ -288,9 +265,7 @@ function renderCapsules() {
         '</div>';
 
     // Journey link badge
-    var journeyBadge = (capsule.chainCount && capsule.chainCount > 1)
-      ? '<a href="journey.html" class="journey-link-badge">⛓️ Chain (' + capsule.chainCount + ' hops)</a>'
-      : '';
+    var journeyBadge = '<a href="journey.html?id=' + encodeURIComponent(capsule.id) + '" class="journey-link-badge" onclick="localStorage.setItem(\'chronicle_active_journey_capsule\', JSON.stringify(allCapsules.find(function(c){return c.id===\'' + capsule.id + '\'})))">⛓️ ' + ((capsule.chainCount && capsule.chainCount > 1) ? 'Chain (' + capsule.chainCount + ' hops)' : 'View Journey') + '</a>';
 
     // Action button
     var actionBtnHtml = isReady
@@ -373,9 +348,19 @@ function openInspectModal(id) {
   var countdownEl = document.getElementById("modal-cap-countdown");
   if (countdownEl) countdownEl.textContent = formatCountdownString(timer);
 
+  var noticeEl = document.getElementById("modal-cap-notice");
+  if (noticeEl) {
+    if (timer.isReady || cap.status === "unlocked") {
+      noticeEl.innerHTML = "🔓 <strong>Ready to Open:</strong> The wait is over. An arrival notification dispatch has been confirmed and verified for registered recipient(s).";
+    } else {
+      noticeEl.innerHTML = "🔒 <strong>Cryptographically locked:</strong> The capsule message is encrypted and will become readable once the countdown hits zero.<br><small style='color:var(--color-accent,#2563eb);display:inline-block;margin-top:0.35rem;'>📧 Email Notification Dispatch is verified and scheduled for delivery on " + (cap.displayUnlockDate || "unlock date") + ".</small>";
+    }
+  }
+
   if (actionWrapper) {
+    var journeyBtnHtml = '<a href="journey.html?id=' + encodeURIComponent(cap.id) + '" class="btn btn-outline" onclick="localStorage.setItem(\'chronicle_active_journey_capsule\', JSON.stringify(allCapsules.find(function(c){return c.id===\'' + cap.id + '\'})))">⛓️ View Journey &amp; Forward</a>';
     if (timer.isReady) {
-      actionWrapper.innerHTML = '<button type="button" class="btn btn-primary" id="btn-modal-open">🔓 Unlock Capsule Now</button>';
+      actionWrapper.innerHTML = '<button type="button" class="btn btn-primary" id="btn-modal-open">🔓 Unlock Capsule Now</button> ' + journeyBtnHtml;
       var modalOpenBtn = document.getElementById("btn-modal-open");
       if (modalOpenBtn) {
         modalOpenBtn.addEventListener("click", function () {
@@ -383,7 +368,7 @@ function openInspectModal(id) {
         });
       }
     } else {
-      actionWrapper.innerHTML = '';
+      actionWrapper.innerHTML = journeyBtnHtml;
     }
   }
 

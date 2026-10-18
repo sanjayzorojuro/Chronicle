@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="../assets/css/common.css" />
     <link rel="stylesheet" href="../assets/css/seal.css" />
     <script src="../assets/js/common.js"></script>
+    <script>
+      if (!localStorage.getItem("chronicle_active_user")) {
+        window.location.replace("login.html");
+      }
+    </script>
   </head>
   <body>
     <!-- Skip to content (Accessibility) -->
@@ -18,14 +23,15 @@
 
     <!-- Header -->
     <header class="site-header">
-      <a href="vault.html" class="site-logo">Chronicle<span>.</span></a>
+      <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
       <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
       <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="discover.html">Discover</a>
+        <a href="create.html" class="active" aria-current="page">Create Capsule</a>
         <a href="vault.html">My Vault</a>
-        <a href="seal.html" class="active" aria-current="page">Seal Capsule</a>
         <a href="journey.html">Journey</a>
         <a href="unlock.html">Unlock</a>
-        <a href="login.html" class="nav-signout">Sign Out</a>
+        <a href="profile.html">Profile</a>
       </nav>
     </header>
 
@@ -196,7 +202,7 @@
 
         <div id="seal-success-actions" class="modal-actions" style="display: none;">
           <a href="vault.html" class="btn btn-primary">Go to My Vault →</a>
-          <a href="seal.html" class="btn btn-outline">Seal Another</a>
+          <a href="create.html" class="btn btn-outline">Seal Another</a>
         </div>
       </div>
     </div>

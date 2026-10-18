@@ -92,9 +92,138 @@ document.addEventListener("click", function (e) {
   }
 });
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initMobileNav);
-} else {
+/**
+ * Synchronize the shared 8-page navigation bar across all pages:
+ * 1. My Vault (vault.html)
+ * 2. Create Capsule (create.html)
+ * 3. Discover (discover.html)
+ * 4. Time Wall (wall.html)
+ * 5. Journey (journey.html)
+ * 6. Profile (profile.html)
+ * 7. Register (register.html)
+ * 8. Sign Out (when logged in) / Sign In (when logged out)
+ */
+/**
+ * Synchronize navigation bar:
+ * - When not logged in (on login/register/index): ONLY 2 pages appear: Sign In and Register.
+ * - After login: ALL 8 pages appear: My Vault, Create Capsule, Discover, Time Wall, Journey, Profile, Register, Sign Out.
+ */
+function syncNavigation() {
+  var nav = document.getElementById("primary-nav");
+  if (!nav) return;
+
+  var user = getActiveUser();
+  var currentPath = window.location.pathname.replace(/\\/g, "/");
+  var pageName = currentPath.substring(currentPath.lastIndexOf("/") + 1).toLowerCase() || "index.html";
+  if (pageName === "index.html" || pageName === "") pageName = "login.html";
+
+  // While on login/index or when logged out: ONLY those 2 pages are shown
+  if (!user) {
+    var authLinks = [
+      { href: "login.html", label: "Sign In" },
+      { href: "register.html", label: "Register" }
+    ];
+
+    var authHtml = "";
+    authLinks.forEach(function (item) {
+      var isCurrent = (pageName === item.href);
+      var classAttr = isCurrent ? ' class="active"' : '';
+      var currentAttr = isCurrent ? ' aria-current="page"' : '';
+      authHtml += '<a href="' + item.href + '"' + classAttr + currentAttr + '>' + item.label + '</a>';
+    });
+
+    nav.innerHTML = authHtml;
+    return;
+  }
+
+  // After login: authenticated application pages in required sequence:
+  // Discover -> Create Capsule -> My Vault -> Journey -> Unlock -> Profile
+  var links = [
+    { href: "discover.html", label: "Discover" },
+    { href: "create.html", label: "Create Capsule" },
+    { href: "vault.html", label: "My Vault" },
+    { href: "journey.html", label: "Journey" },
+    { href: "unlock.html", label: "Unlock" },
+    { href: "profile.html", label: "Profile" }
+  ];
+
+  var html = "";
+  links.forEach(function (item) {
+    var isCurrent = (pageName === item.href) ||
+                    (pageName === "seal.html" && item.href === "create.html");
+
+    var classNames = [];
+    if (isCurrent) classNames.push("active");
+    if (item.className) classNames.push(item.className);
+
+    var classAttr = classNames.length ? ' class="' + classNames.join(" ") + '"' : "";
+    var currentAttr = isCurrent ? ' aria-current="page"' : "";
+    var clickAttr = item.onClick ? ' onclick="' + item.onClick + '"' : "";
+
+    html += '<a href="' + item.href + '"' + classAttr + currentAttr + clickAttr + '>' + item.label + '</a>';
+  });
+
+  nav.innerHTML = html;
+
+  // Ensure site logo links to Discover when logged in
+  var logo = document.querySelector(".site-logo");
+  if (logo) {
+    logo.setAttribute("href", "discover.html");
+  }
+}
+window.syncNavigation = syncNavigation;
+
+function setupNavigation() {
+  syncNavigation();
   initMobileNav();
 }
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupNavigation);
+} else {
+  setupNavigation();
+}
+
+/**
+ * Get the currently logged-in user from localStorage
+ * @returns {object|null} The active user object or null
+ */
+function getActiveUser() {
+  try {
+    var stored = localStorage.getItem("chronicle_active_user");
+    if (stored) return JSON.parse(stored);
+  } catch (e) {}
+  return null;
+}
+window.getActiveUser = getActiveUser;
+
+/**
+ * Auth guard: redirect to login if no active user session exists.
+ * Call this on pages that require authentication.
+ */
+function requireAuth() {
+  var user = getActiveUser();
+  if (!user) {
+    window.location.href = "login.html";
+    return false;
+  }
+  return true;
+}
+window.requireAuth = requireAuth;
+
+/**
+ * Sign out: prompts for confirmation before clearing active user session and redirecting to login
+ */
+function signOut(e) {
+  if (e && e.preventDefault) e.preventDefault();
+  var confirmed = window.confirm("Are you sure you want to sign out of Chronicle?");
+  if (!confirmed) return false;
+
+  try {
+    localStorage.removeItem("chronicle_active_user");
+  } catch (ex) {}
+  window.location.href = "login.html";
+  return true;
+}
+window.signOut = signOut;
 

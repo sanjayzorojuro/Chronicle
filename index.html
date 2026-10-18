@@ -2,13 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=pages/vault.html" />
-    <title>Chronicle — Digital Time Capsule</title>
+    <meta http-equiv="refresh" content="0; url=pages/login.html" />
     <script>
-      window.location.href = "pages/vault.html";
+      if (localStorage.getItem("chronicle_active_user")) {
+        window.location.replace("pages/discover.html");
+      } else {
+        window.location.replace("pages/login.html");
+      }
     </script>
   </head>
   <body>
-    <p>Redirecting to <a href="pages/vault.html">Chronicle Vault</a>...</p>
+    <p>Redirecting to Chronicle...</p>
   </body>
 </html>

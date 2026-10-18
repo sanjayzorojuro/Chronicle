@@ -4,7 +4,7 @@
  * This is a front-end demo, not a secure time-lock service.
  */
 const DRAFT_KEY = "chronicleDraft";
-const RECIPIENT_PAGE = ""; // Set to Member 2's page when it is ready.
+const RECIPIENT_PAGE = "seal.html"; // Connected to Member 2's Recipient Selection & Seal page.
 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("capsule-form");
@@ -153,6 +153,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const draft = buildDraft();
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+
+      // Also sync to Member 2's seal page schema
+      var activeUser = typeof getActiveUser === "function" ? getActiveUser() : null;
+      var sealDraft = {
+        id: "CHR-" + Math.floor(1000 + Math.random() * 9000),
+        title: draft.title,
+        message: draft.message,
+        category: draft.category,
+        unlockDate: draft.unlockDate,
+        displayUnlockDate: displayDate(draft.unlockDate),
+        link: draft.link,
+        media_url: draft.image || null,
+        creator: (activeUser && activeUser.name) ? activeUser.name : "You",
+        dateCreated: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+        isPublic: false
+      };
+      try {
+        localStorage.setItem("chronicle_current_draft", JSON.stringify(sealDraft));
+      } catch (err) {}
+
       createdAt = draft.createdAt;
       lastSavedDraft = draft;
       status.textContent = "Draft saved in this browser. You can come back to it.";
@@ -354,6 +374,24 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   setMinimumDate();
+
+  // If previous capsule was sealed, reset form and clear storage
+  if (localStorage.getItem("chronicle_draft_sealed")) {
+    try {
+      localStorage.removeItem("chronicle_draft_sealed");
+      localStorage.removeItem(DRAFT_KEY);
+      localStorage.removeItem("chronicle_current_draft");
+    } catch (e) {}
+    form.reset();
+    imageData = "";
+    imageName = "";
+    createdAt = "";
+    lastSavedDraft = null;
+    extras.open = false;
+    summary.hidden = true;
+    status.textContent = "A fresh start. Not saved yet.";
+  }
+
   const restored = restoreDraft();
   const template = templates[new URLSearchParams(location.search).get("template")];
   if (template && (!restored || confirm("Use this starting idea instead of your current draft? The saved draft won't change until you save again."))) {

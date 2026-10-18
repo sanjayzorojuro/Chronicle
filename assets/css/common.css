@@ -7,14 +7,15 @@
 :root {
   --color-bg: #ffffff;
   --color-text: #1a1a1a;
-  --color-text-secondary: #575757;
-  --color-accent: #d95300;
-  --color-accent-hover: #b84400;
+  --color-text-secondary: #545454;
+  --color-accent: #c44b00;
+  --color-accent-hover: #a33e00;
   --color-accent-light: #fff3eb;
-  --color-border: #e0e0e0;
+  --color-border: #d9d9d9;
   --color-white: #ffffff;
+  --color-error: #c62828;
 
-  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
   --font-size-base: 16px;
   --font-size-sm: 0.875rem;
   --font-size-lg: 1.125rem;
@@ -138,7 +139,7 @@ ul, ol {
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: clamp(0.5rem, 1.2vw, 1.25rem);
 }
 
 .site-nav a {
@@ -300,12 +301,12 @@ main {
 .form-group .error-msg {
   display: none;
   font-size: var(--font-size-sm);
-  color: #d32f2f;
+  color: var(--color-error);
   margin-top: 0.25rem;
 }
 
 .form-group.has-error input {
-  border-color: #d32f2f;
+  border-color: var(--color-error);
 }
 
 .form-group.has-error .error-msg {
@@ -318,7 +319,7 @@ html, body {
 }
 
 /* --- Responsive Layout & Mobile Hamburger Navigation --- */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .site-header {
     display: flex;
     flex-wrap: wrap;

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Explore the Chronicle Public Time Wall. Read unlocked time capsules that people chose to share with the world."
+    />
+    <title>Public Time Wall — Chronicle</title>
+    <link rel="stylesheet" href="../assets/css/common.css" />
+    <link rel="stylesheet" href="../assets/css/wall.css" />
+    <script src="../assets/js/common.js"></script>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header class="site-header">
+      <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
+      <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
+      <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="discover.html">Discover</a>
+        <a href="create.html">Create Capsule</a>
+        <a href="vault.html">My Vault</a>
+        <a href="journey.html">Journey</a>
+        <a href="unlock.html">Unlock</a>
+        <a href="profile.html">Profile</a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section class="wall-hero">
+        <h1>Public Time Wall</h1>
+        <p>Memories that have finally unlocked, shared by the people who sealed them.</p>
+      </section>
+
+      <section class="year-timeline" aria-label="Filter by unlock year">
+        <div id="year-chips" class="year-chips" role="group" aria-label="Unlock year"></div>
+      </section>
+
+      <section class="wall-controls card" aria-label="Search and filters">
+        <div class="wall-search">
+          <span class="wall-search-icon" aria-hidden="true">🔍</span>
+          <input type="text" id="wall-search" placeholder="Search by title, message or author..." aria-label="Search public capsules" />
+        </div>
+        <div class="wall-filters">
+          <select id="wall-category" aria-label="Filter by category">
+            <option value="all">All Categories</option>
+            <option value="Friendship">Friendship</option>
+            <option value="Personal">Personal</option>
+            <option value="Milestone">Milestone</option>
+            <option value="Memories">Memories</option>
+          </select>
+          <select id="wall-sort" aria-label="Sort capsules">
+            <option value="newest">Newest unlocked</option>
+            <option value="oldest">Oldest unlocked</option>
+          </select>
+        </div>
+      </section>
+
+      <p id="wall-count" class="wall-count" aria-live="polite"></p>
+
+      <section aria-label="Public capsules">
+        <div id="wall-grid" class="wall-grid"></div>
+        <div id="wall-empty" class="card wall-empty" style="display: none">
+          <div class="wall-empty-icon" aria-hidden="true">🕰️</div>
+          <h2>Nothing on the wall yet</h2>
+          <p>No public capsules match your search and filters.</p>
+          <button type="button" id="wall-reset" class="btn btn-outline">Clear filters</button>
+        </div>
+      </section>
+    </main>
+
+    <div id="wall-modal" class="wall-modal" role="dialog" aria-modal="true" aria-labelledby="wm-title" style="display: none">
+      <div class="wall-modal-content card">
+        <div class="wall-modal-head">
+          <span class="wall-badge" id="wm-badge"></span>
+          <button type="button" id="wm-close" class="wall-close" aria-label="Close">&times;</button>
+        </div>
+        <h2 id="wm-title"></h2>
+        <p class="wm-meta" id="wm-meta"></p>
+        <div class="wm-message" id="wm-message"></div>
+        <div class="wm-actions">
+          <button type="button" id="wm-like" class="btn btn-outline" aria-pressed="false">♡ Appreciate</button>
+          <a href="create.html" class="btn btn-primary">Create your own capsule</a>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+    <footer class="site-footer">
+      <p>&copy; 2026 Chronicle. All rights reserved.</p>
+    </footer>
+
+    <script src="../assets/js/db.js"></script>
+    <script src="../assets/js/wall.js"></script>
+  </body>
+</html>

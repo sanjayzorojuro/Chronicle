@@ -11,6 +11,11 @@
     <link rel="stylesheet" href="../assets/css/common.css" />
     <link rel="stylesheet" href="../assets/css/journey.css" />
     <script src="../assets/js/common.js"></script>
+    <script>
+      if (!localStorage.getItem("chronicle_active_user")) {
+        window.location.replace("login.html");
+      }
+    </script>
   </head>
   <body>
     <!-- Skip to content (Accessibility) -->
@@ -18,23 +23,70 @@
 
     <!-- Header -->
     <header class="site-header">
-      <a href="vault.html" class="site-logo">Chronicle<span>.</span></a>
+      <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
       <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
       <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
+        <a href="discover.html">Discover</a>
+        <a href="create.html">Create Capsule</a>
         <a href="vault.html">My Vault</a>
-        <a href="seal.html">Seal Capsule</a>
         <a href="journey.html" class="active" aria-current="page">Journey</a>
         <a href="unlock.html">Unlock</a>
-        <a href="login.html" class="nav-signout">Sign Out</a>
+        <a href="profile.html">Profile</a>
       </nav>
     </header>
 
     <!-- Main Content -->
     <main id="main-content">
-      <!-- Journey Header -->
+      <!-- 1. Top Showcase: All Unlocked Capsules Ready to Pass Forward -->
+      <section class="unlocked-capsules-section card" aria-label="Unlocked capsules ready to pass forward">
+        <div class="unlocked-header">
+          <div>
+            <h2>🔓 Unlocked Capsules Ready to Pass Forward</h2>
+            <p style="margin: 0.25rem 0 0; color: var(--color-text-secondary); font-size: 0.875rem;">
+              The following capsules have reached their unlock date, are open, and can now be passed forward along a time chain.
+            </p>
+          </div>
+          <span id="unlocked-count-badge" class="badge" style="padding: 0.25rem 0.75rem; background: var(--color-accent-light); color: var(--color-accent); font-weight: 700; border-radius: 9999px; font-size: 0.8rem;">Loading...</span>
+        </div>
+
+        <!-- Dynamic Grid of Unlocked Capsule Cards -->
+        <div id="unlocked-capsules-grid" class="unlocked-capsules-grid">
+          <!-- Populated by journey.js -->
+        </div>
+
+        <!-- Empty State if no capsules are unlocked yet -->
+        <div id="unlocked-capsules-empty" class="unlocked-empty-box" style="display: none; padding: 1.5rem; text-align: center; background: #f8fafc; border: 1px dashed var(--color-border); border-radius: var(--radius);">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;" aria-hidden="true">⏳</div>
+          <h3 style="margin: 0 0 0.35rem; font-size: 1.05rem;">No Unlocked Capsules Available Yet</h3>
+          <p style="color: var(--color-text-secondary); font-size: 0.875rem; margin: 0 0 1rem; max-width: 500px; margin-inline: auto;">
+            Capsules must reach their unlock date and be opened before they can be forwarded on a journey chain. Check your vault to view countdowns or unlock capsules that are ready!
+          </p>
+          <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+            <a href="vault.html" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.5rem 1rem;">View My Vault</a>
+            <a href="unlock.html" class="btn btn-primary" style="font-size: 0.85rem; padding: 0.5rem 1rem;">Open Unlock Reader</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Journey Header & Active Chain -->
       <section class="journey-header">
-        <h1>Capsule Journey</h1>
-        <p>Track how this capsule has traveled across people and time.</p>
+        <h1>Active Capsule Chain</h1>
+        <p>Track the timeline and progression of the currently selected capsule.</p>
+
+        <!-- Active Capsule Details & Switcher -->
+        <div class="card" id="journey-capsule-card" style="margin-top: 1.5rem; text-align: left; padding: 1.25rem 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <span class="category-tag" id="journey-cap-category" style="display: inline-block; padding: 0.25rem 0.6rem; background: var(--color-accent-light); color: var(--color-accent); border-radius: 4px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">Capsule</span>
+              <h2 id="journey-cap-title" style="margin: 0.4rem 0 0.25rem; font-size: 1.35rem;">Loading Capsule...</h2>
+              <p id="journey-cap-meta" style="color: var(--color-text-secondary); font-size: 0.875rem; margin: 0;"></p>
+            </div>
+            <div id="journey-selector-wrapper" style="min-width: 220px;">
+              <label for="journey-capsule-select" style="font-size: 0.8rem; font-weight: 600; display: block; margin-bottom: 0.25rem;">Switch Capsule:</label>
+              <select id="journey-capsule-select" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: var(--radius); border: 1px solid var(--color-border); font-family: inherit; font-size: 0.875rem;"></select>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Timeline -->
@@ -47,36 +99,46 @@
       <!-- Continue Journey -->
       <section class="continue-section card" aria-label="Continue the journey">
         <h2>Continue the Journey</h2>
-        <p>Pass this capsule forward to another Chronicle user.</p>
+        <p>Pass this capsule forward to another registered Chronicle user.</p>
+
+        <!-- Forwarding Target Callout -->
+        <div id="forward-target-indicator" style="margin: 1.25rem 0 1.5rem; padding: 1rem 1.25rem; background: #f0f7ff; border-left: 4px solid var(--color-accent, #3b82f6); border-radius: 8px;">
+          <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--color-accent, #2563eb);">Currently Forwarding Capsule</div>
+          <div id="forward-cap-name" style="font-size: 1.2rem; font-weight: 700; margin-top: 0.25rem; color: var(--color-text);">—</div>
+          <div id="forward-cap-details" style="font-size: 0.85rem; color: var(--color-text-secondary); margin-top: 0.25rem;">—</div>
+        </div>
 
         <form id="continue-form" novalidate>
-          <div class="form-group">
-            <label for="recipient">Recipient Username</label>
-            <input
-              type="text"
+          <div class="form-group" id="recipient-group">
+            <label for="recipient">Select Recipient <span class="required-mark" aria-hidden="true">*</span></label>
+            <select
               id="recipient"
               name="recipient"
-              placeholder="e.g. ananya.rao"
               required
-              autocomplete="off"
-              aria-describedby="recipient-error"
-            />
+              aria-describedby="recipient-error recipient-help"
+              style="width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--color-border); border-radius: var(--radius); font-size: 1rem; background: var(--color-white); color: var(--color-text);"
+            >
+              <option value="">Choose an available user on the website...</option>
+            </select>
+            <p id="recipient-help" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 0.35rem;">
+              Choose from all registered users on Chronicle to pass this memory forward.
+            </p>
             <span id="recipient-error" class="error-msg" role="alert">
-              Please enter a recipient username.
+              Please choose a recipient from available users.
             </span>
           </div>
 
           <div class="form-group">
-            <label for="journey-message">Add a Message (Optional)</label>
+            <label for="journey-message">Add a Message to the Chain (Optional)</label>
             <textarea
               id="journey-message"
               name="journey-message"
-              placeholder="Write something for the next person…"
+              placeholder="Write a message for the next person in the chain…"
               rows="4"
             ></textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" id="btn-submit-journey" class="btn btn-primary">
             Continue Journey →
           </button>
         </form>
@@ -92,6 +154,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="../assets/js/db.js"></script>
     <script src="../assets/js/journey.js"></script>
   </body>
 </html>
