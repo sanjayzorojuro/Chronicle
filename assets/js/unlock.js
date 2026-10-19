@@ -17,17 +17,48 @@ var demoCapsule = {
   linkLabel: "Attached Photo Album"
 };
 
-// Check if an active capsule was selected from My Vault
+// Resolve capsule: prefer ?id= URL param → localStorage fallback → demo defaults
 try {
-  var storedActive = localStorage.getItem("chronicle_active_capsule");
-  if (storedActive) {
-    var parsedActive = JSON.parse(storedActive);
+  // 1. Try reading capsule ID from ?id= query parameter (supports direct links and page refreshes)
+  var urlParams = new URLSearchParams(window.location.search);
+  var urlCapsuleId = urlParams.get("id");
+
+  var parsedActive = null;
+
+  if (urlCapsuleId && typeof ChronicleDB !== "undefined" && ChronicleDB.getCapsuleById) {
+    // Look up the capsule directly from the database using the URL id
+    var dbCapsule = ChronicleDB.getCapsuleById(urlCapsuleId);
+    if (dbCapsule) {
+      parsedActive = {
+        id: dbCapsule.capsule_id,
+        capsule_id: dbCapsule.capsule_id,
+        title: dbCapsule.title,
+        message: dbCapsule.message,
+        creator: dbCapsule.creator_name,
+        category: dbCapsule.category,
+        created_at: dbCapsule.created_at,
+        media_url: dbCapsule.media_url || null,
+        link: null
+      };
+    }
+  }
+
+  // 2. Fall back to localStorage (set by vault navigateToUnlock)
+  if (!parsedActive) {
+    var storedActive = localStorage.getItem("chronicle_active_capsule");
+    if (storedActive) {
+      parsedActive = JSON.parse(storedActive);
+    }
+  }
+
+  if (parsedActive) {
     demoCapsule.title = parsedActive.title || demoCapsule.title;
     demoCapsule.message = parsedActive.message || demoCapsule.message;
     demoCapsule.creator = parsedActive.creator || parsedActive.creator_name || demoCapsule.creator;
     demoCapsule.category = parsedActive.category || demoCapsule.category;
     demoCapsule.dateCreated = parsedActive.dateCreated || parsedActive.created_at || demoCapsule.dateCreated;
     demoCapsule.dateOpened = new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+    demoCapsule.id = parsedActive.id || parsedActive.capsule_id || demoCapsule.id || null;
     demoCapsule.media_url = parsedActive.media_url || parsedActive.image || null;
     demoCapsule.link = parsedActive.link || null;
   }
@@ -133,6 +164,12 @@ function renderCapsule() {
         localStorage.setItem("chronicle_active_journey_capsule", JSON.stringify(demoCapsule));
       } catch (e) {}
     };
+  }
+
+  // Show/hide photo album attachment based on media_url
+  var attachmentEl = document.getElementById("cap-attachment");
+  if (attachmentEl) {
+    attachmentEl.style.display = demoCapsule.media_url ? "block" : "none";
   }
 
   setupPhotoAlbumModal();

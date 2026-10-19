@@ -140,7 +140,7 @@ function updateMetrics() {
 
   allCapsules.forEach(function (c) {
     var timer = getTimeRemaining(c.unlockDate);
-    var isActuallyReady = timer.isReady || c.status === "ready";
+    var isActuallyReady = timer.isReady || c.status === "ready" || c.status === "unlocked";
 
     if (isActuallyReady) {
       readyCount++;
@@ -201,7 +201,7 @@ function getFilteredCapsules() {
 
     // 3. Status Filter
     var timer = getTimeRemaining(capsule.unlockDate);
-    var isReady = timer.isReady || capsule.status === "ready";
+    var isReady = timer.isReady || capsule.status === "ready" || capsule.status === "unlocked";
     if (selectedStatus === "sealed" && isReady) return false;
     if (selectedStatus === "ready" && !isReady) return false;
 
@@ -238,7 +238,7 @@ function renderCapsules() {
 
   filtered.forEach(function (capsule) {
     var timer = getTimeRemaining(capsule.unlockDate);
-    var isReady = timer.isReady || capsule.status === "ready";
+    var isReady = timer.isReady || capsule.status === "ready" || capsule.status === "unlocked";
 
     var card = document.createElement("article");
     card.className = "capsule-card " + (isReady ? "ready-state" : "sealed-state");

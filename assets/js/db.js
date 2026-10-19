@@ -52,53 +52,9 @@ var ChronicleDB = (function () {
           var current = getDB();
           var changed = false;
 
-          // 1. Purge legacy removed users and their capsules
-          var removedUsernames = ["mounika.shetty", "daron.john", "sanjay.patil", "ananya.rao", "rahul.nair"];
-          var removedCreators = ["mounika shetty", "daron john", "sanjay patil", "ananya rao", "rahul nair"];
+          // No purge block — all registered users are preserved
 
-          var initialUserCount = (current.users || []).length;
-          current.users = (current.users || []).filter(function (u) {
-            return u && u.username && !removedUsernames.includes(u.username.toLowerCase());
-          });
-          if (current.users.length !== initialUserCount) changed = true;
-
-          var initialCapCount = (current.capsules || []).length;
-          current.capsules = (current.capsules || []).filter(function (c) {
-            var cName = (c.creator_name || c.creator || "").toLowerCase().trim();
-            return !removedCreators.includes(cName);
-          });
-          if (current.capsules.length !== initialCapCount) changed = true;
-
-          var validCapIds = (current.capsules || []).map(function (c) { return c.capsule_id; });
-          var initialRecCount = (current.capsule_recipients || []).length;
-          current.capsule_recipients = (current.capsule_recipients || []).filter(function (r) {
-            return r && validCapIds.includes(r.capsule_id);
-          });
-          if (current.capsule_recipients.length !== initialRecCount) changed = true;
-
-          // Also purge removed users from standalone localStorage keys
-          try {
-            var reg = JSON.parse(localStorage.getItem("chronicle_registered_users_v2") || "[]");
-            var filteredReg = reg.filter(function (u) {
-              return u && u.username && !removedUsernames.includes(u.username.toLowerCase());
-            });
-            if (filteredReg.length !== reg.length) {
-              localStorage.setItem("chronicle_registered_users_v2", JSON.stringify(filteredReg));
-            }
-          } catch (e) {}
-
-          try {
-            var vc = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
-            var filteredVc = vc.filter(function (c) {
-              var cName = (c.creator || c.creator_name || "").toLowerCase().trim();
-              return !removedCreators.includes(cName);
-            });
-            if (filteredVc.length !== vc.length) {
-              localStorage.setItem("chronicle_vault_capsules", JSON.stringify(filteredVc));
-            }
-          } catch (e) {}
-
-          // 2. Merge seed users (sanjayrao, kishan) if not already present
+          // 2. Merge seed users (admin) if not already present
           if (jsonData.users && Array.isArray(jsonData.users)) {
             current.users = current.users || [];
             jsonData.users.forEach(function (ju) {

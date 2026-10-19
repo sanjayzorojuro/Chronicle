@@ -142,6 +142,7 @@ function syncNavigation() {
     { href: "discover.html", label: "Discover" },
     { href: "create.html", label: "Create Capsule" },
     { href: "vault.html", label: "My Vault" },
+    { href: "wall.html", label: "Time Wall" },
     { href: "journey.html", label: "Journey" },
     { href: "unlock.html", label: "Unlock" },
     { href: "profile.html", label: "Profile" }
@@ -162,6 +163,9 @@ function syncNavigation() {
 
     html += '<a href="' + item.href + '"' + classAttr + currentAttr + clickAttr + '>' + item.label + '</a>';
   });
+
+  // Append Sign Out link
+  html += '<a href="#" class="nav-signout" onclick="return signOut(event);" aria-label="Sign out of Chronicle">Sign Out</a>';
 
   nav.innerHTML = html;
 

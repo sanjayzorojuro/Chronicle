@@ -1,4 +1,4 @@
-var DB_STORAGE_KEY = "chronicle_local_db";
+var DB_STORAGE_KEY = "chronicle_local_db_v2";
 var profileDb = null;
 var profileUser = null;
 var activityEvents = [];

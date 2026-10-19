@@ -14,7 +14,7 @@ var currentDraft = {
   category: "Friendship",
   unlockDate: "2027-09-01",
   displayUnlockDate: "01 September 2027",
-  creator: "Daron John",
+  creator: "Admin",
   dateCreated: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
   isPublic: false
 };
