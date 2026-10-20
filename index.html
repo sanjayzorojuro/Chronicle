@@ -1,17 +1,20 @@
+
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=pages/login.html" />
-    <script>
-      if (localStorage.getItem("chronicle_active_user")) {
-        window.location.replace("pages/discover.html");
-      } else {
-        window.location.replace("pages/login.html");
-      }
-    </script>
-  </head>
-  <body>
-    <p>Redirecting to Chronicle...</p>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chronicle</title>
+</head>
+<body>
+  <p>Redirecting to Chronicle...</p>
+
+  <script>
+    const activeUser = localStorage.getItem("chronicle_active_user");
+
+    window.location.replace(
+      activeUser ? "./pages/discover.html" : "./pages/login.html"
+    );
+  </script>
+</body>
 </html>
