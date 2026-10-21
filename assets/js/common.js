@@ -115,11 +115,12 @@ function syncNavigation() {
   var user = getActiveUser();
   var currentPath = window.location.pathname.replace(/\\/g, "/");
   var pageName = currentPath.substring(currentPath.lastIndexOf("/") + 1).toLowerCase() || "index.html";
-  if (pageName === "index.html" || pageName === "") pageName = "login.html";
+  if (pageName === "index.html" || pageName === "") pageName = "discover.html";
 
   // While on login/index or when logged out: ONLY those 2 pages are shown
   if (!user) {
     var authLinks = [
+      { href: "discover.html", label: "Discover" },
       { href: "login.html", label: "Sign In" },
       { href: "register.html", label: "Register" }
     ];

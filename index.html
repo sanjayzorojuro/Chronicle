@@ -1,20 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chronicle</title>
+  <title>Chronicle — Digital Time Capsule</title>
 </head>
 <body>
   <p>Redirecting to Chronicle...</p>
 
   <script>
-    const activeUser = localStorage.getItem("chronicle_active_user");
-
-    window.location.replace(
-      activeUser ? "./pages/discover.html" : "./pages/login.html"
-    );
+    // Redirect to the public Discover showcase page by default
+    window.location.replace("./pages/discover.html");
   </script>
 </body>
 </html>
