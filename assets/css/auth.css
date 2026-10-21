@@ -264,3 +264,23 @@
     font-size: var(--font-size-xl);
   }
 }
+
+/* Demo / Prototype Notice Banner */
+.demo-badge-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  background: #fdfaf3;
+  border: 1px solid #ebd39f;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.82rem;
+  color: #6a4c11;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.demo-badge-notice strong {
+  color: #4a3205;
+}

@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
     content="Create a new Chronicle account to craft future time capsules, schedule memories, and participate in person-to-person time chains." />
-  <title>Create Account — Chronicle</title>
+  <title>Register — Chronicle Prototype Demo</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="Chronicle Student Project — Digital Time Capsule Demonstration" />
   <link rel="stylesheet" href="../assets/css/common.css" />
   <link rel="stylesheet" href="../assets/css/auth.css" />
   <script src="../assets/js/common.js"></script>
@@ -45,22 +47,22 @@
       <form id="register-form" novalidate>
         <div class="form-group" id="group-fullname">
           <label for="fullname">Full Name</label>
-          <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required autocomplete="name"
-            aria-describedby="fullname-error" />
+          <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required
+            autocomplete="name" aria-describedby="fullname-error" />
           <span class="error-msg" id="fullname-error" role="alert">Please enter your full name.</span>
         </div>
 
         <div class="form-group" id="group-reg-username">
           <label for="reg-username">Username</label>
-          <input type="text" id="reg-username" name="reg-username" placeholder="Choose a username (e.g. alex26)" required
-            autocomplete="username" aria-describedby="reg-username-error" />
+          <input type="text" id="reg-username" name="reg-username" placeholder="Choose a username (e.g. alex26)"
+            required autocomplete="username" aria-describedby="reg-username-error" />
           <span class="error-msg" id="reg-username-error" role="alert">Username must be at least 3 characters.</span>
         </div>
 
         <div class="form-group" id="group-email">
           <label for="email">Email Address</label>
-          <input type="email" id="email" name="email" placeholder="name@example.com" required
-            autocomplete="email" aria-describedby="email-error" />
+          <input type="email" id="email" name="email" placeholder="name@example.com" required autocomplete="email"
+            aria-describedby="email-error" />
           <span class="error-msg" id="email-error" role="alert">Please enter a valid email address (e.g.
             name@domain.com).</span>
         </div>
@@ -68,9 +70,8 @@
         <div class="form-group" id="group-reg-password">
           <label for="reg-password">Password</label>
           <div class="password-wrapper">
-            <input type="password" id="reg-password" name="reg-password"
-              placeholder="At least 6 characters" required autocomplete="new-password"
-              aria-describedby="reg-password-error" />
+            <input type="password" id="reg-password" name="reg-password" placeholder="At least 6 characters" required
+              autocomplete="new-password" aria-describedby="reg-password-error" />
             <button type="button" class="btn-toggle-password" id="toggle-reg-password" aria-label="Show password"
               title="Show password">
               👁
