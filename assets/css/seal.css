@@ -499,8 +499,8 @@
 }
 
 .wax-stamp {
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   background: radial-gradient(circle, #e8600a 40%, #c44d03 100%);
   display: flex;
@@ -533,15 +533,16 @@
 }
 
 .stamp-label {
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   font-weight: 800;
   letter-spacing: 1.5px;
   margin-top: 0.25rem;
 }
 
 .stamp-year {
-  font-size: 0.625rem;
-  opacity: 0.85;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  opacity: 0.95;
 }
 
 .modal-title {

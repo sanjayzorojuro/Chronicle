@@ -8,8 +8,8 @@
       content="Access your personal Chronicle Vault. Track sealed time capsules with live countdowns, unlock arriving memories, and manage time chains."
     />
     <title>My Vault — Chronicle</title>
-    <link rel="stylesheet" href="../assets/css/common.css" />
-    <link rel="stylesheet" href="../assets/css/vault.css" />
+    <link rel="stylesheet" href="../assets/css/common.css?v=4" />
+    <link rel="stylesheet" href="../assets/css/vault.css?v=5" />
     <script src="../assets/js/common.js"></script>
     <script>
       if (!localStorage.getItem("chronicle_active_user")) {
@@ -23,14 +23,13 @@
 
     <!-- Header -->
     <header class="site-header">
-      <a href="discover.html" class="site-logo">Chronicle<span>.</span></a>
+      <a href="../index.html" class="site-logo" aria-label="Chronicle Home">Chronicle<span>.</span></a>
       <button type="button" class="nav-toggle" id="nav-toggle-btn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="primary-nav">☰</button>
       <nav class="site-nav" id="primary-nav" aria-label="Main navigation">
         <a href="discover.html">Discover</a>
-        <a href="create.html">Create Capsule</a>
+        <a href="wall.html">Time Wall</a>
         <a href="vault.html" class="active" aria-current="page">My Vault</a>
-        <a href="journey.html">Journey</a>
-        <a href="unlock.html">Unlock</a>
+        <a href="create.html">Create Capsule</a>
         <a href="profile.html">Profile</a>
       </nav>
     </header>
@@ -153,6 +152,7 @@
 
       <!-- Capsules Grid -->
       <section class="capsules-section" aria-label="Capsules List">
+        <h2 class="sr-only">Your Vault Capsules</h2>
         <div id="capsules-grid" class="capsules-grid">
           <!-- Populated dynamically by vault.js -->
         </div>
@@ -174,7 +174,7 @@
           <span class="inspect-badge" id="modal-cap-badge">🔒 Sealed</span>
           <button type="button" id="btn-close-modal" class="btn-close" aria-label="Close modal">&times;</button>
         </div>
-        <h2 id="modal-cap-title" class="inspect-title"></h2>
+        <h2 id="modal-cap-title" class="inspect-title">Capsule Details</h2>
         <div class="inspect-meta-grid">
           <div class="meta-item">
             <strong>Creator</strong>

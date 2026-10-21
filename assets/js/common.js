@@ -141,11 +141,9 @@ function syncNavigation() {
   // Discover -> Create Capsule -> My Vault -> Journey -> Unlock -> Profile
   var links = [
     { href: "discover.html", label: "Discover" },
-    { href: "create.html", label: "Create Capsule" },
-    { href: "vault.html", label: "My Vault" },
     { href: "wall.html", label: "Time Wall" },
-    { href: "journey.html", label: "Journey" },
-    { href: "unlock.html", label: "Unlock" },
+    { href: "vault.html", label: "My Vault" },
+    { href: "create.html", label: "Create Capsule" },
     { href: "profile.html", label: "Profile" }
   ];
 
@@ -173,7 +171,8 @@ function syncNavigation() {
   // Ensure site logo links to Discover when logged in
   var logo = document.querySelector(".site-logo");
   if (logo) {
-    logo.setAttribute("href", "discover.html");
+    logo.setAttribute("href", "../index.html");
+    logo.setAttribute("aria-label", "Chronicle Home");
   }
 }
 window.syncNavigation = syncNavigation;

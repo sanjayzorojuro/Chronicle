@@ -244,33 +244,44 @@ function renderCapsules() {
     card.className = "capsule-card " + (isReady ? "ready-state" : "sealed-state");
     card.setAttribute("aria-label", "Capsule: " + capsule.title);
 
+    var isUnlocked = capsule.status === "unlocked";
     // Status Badge
-    var statusBadgeHtml = isReady
-      ? '<span class="status-badge ready">🔓 Ready to Unlock</span>'
-      : '<span class="status-badge sealed">🔒 Sealed</span>';
+    var statusBadgeHtml = isUnlocked
+      ? '<span class="status-badge unlocked" style="background:#e8f5e9;color:#2e7d32;">🔓 Unlocked</span>'
+      : (isReady
+          ? '<span class="status-badge ready">🔓 Ready to Unlock</span>'
+          : '<span class="status-badge sealed">🔒 Sealed</span>');
 
     // Countdown / Ready status UI
-    var countdownHtml = isReady
-      ? '<div class="countdown-box ready-ticker">' +
-        '  <span class="countdown-title">Vault Door Status</span>' +
-        '  <div class="countdown-digits ready-text">✓ Access Permitted Now</div>' +
-        '  <span class="target-date-subtext">Unsealed on ' + escapeHTML(capsule.displayUnlockDate) + '</span>' +
+    var countdownHtml = isUnlocked
+      ? '<div class="countdown-box ready-ticker" style="border-color:#c8e6c9;">' +
+        '  <span class="countdown-title">Capsule Status</span>' +
+        '  <div class="countdown-digits ready-text" style="color:#2e7d32;">✓ Unlocked & Opened</div>' +
+        '  <span class="target-date-subtext">Opened memory &bull; Accessible anytime</span>' +
         '</div>'
-      : '<div class="countdown-box">' +
-        '  <span class="countdown-title">Unlocks In</span>' +
-        '  <div class="countdown-digits" data-unlock-date="' + escapeHTML(capsule.unlockDate) + '">' +
-             formatCountdownString(timer) +
-        '  </div>' +
-        '  <span class="target-date-subtext">Target: ' + escapeHTML(capsule.displayUnlockDate) + '</span>' +
-        '</div>';
+      : (isReady
+          ? '<div class="countdown-box ready-ticker">' +
+            '  <span class="countdown-title">Vault Door Status</span>' +
+            '  <div class="countdown-digits ready-text">✓ Access Permitted Now</div>' +
+            '  <span class="target-date-subtext">Unsealed on ' + escapeHTML(capsule.displayUnlockDate) + '</span>' +
+            '</div>'
+          : '<div class="countdown-box">' +
+            '  <span class="countdown-title">Unlocks In</span>' +
+            '  <div class="countdown-digits" data-unlock-date="' + escapeHTML(capsule.unlockDate) + '">' +
+                 formatCountdownString(timer) +
+            '  </div>' +
+            '  <span class="target-date-subtext">Target: ' + escapeHTML(capsule.displayUnlockDate) + '</span>' +
+            '</div>');
 
     // Journey link badge
     var journeyBadge = '<a href="journey.html?id=' + encodeURIComponent(capsule.id) + '" class="journey-link-badge" onclick="localStorage.setItem(\'chronicle_active_journey_capsule\', JSON.stringify(allCapsules.find(function(c){return c.id===\'' + capsule.id + '\'})))">⛓️ ' + ((capsule.chainCount && capsule.chainCount > 1) ? 'Chain (' + capsule.chainCount + ' hops)' : 'View Journey') + '</a>';
 
     // Action button
-    var actionBtnHtml = isReady
-      ? '<button type="button" class="btn btn-primary btn-open-capsule" data-id="' + capsule.id + '">🔓 Unlock & Read →</button>'
-      : '<button type="button" class="btn btn-outline btn-inspect-seal" data-id="' + capsule.id + '">Inspect Seal</button>';
+    var actionBtnHtml = isUnlocked
+      ? '<button type="button" class="btn btn-primary btn-open-capsule" data-id="' + capsule.id + '" style="background:#2e7d32;border-color:#2e7d32;">📖 Read Capsule →</button>'
+      : (isReady
+          ? '<button type="button" class="btn btn-primary btn-open-capsule" data-id="' + capsule.id + '">🔓 Unlock & Read →</button>'
+          : '<button type="button" class="btn btn-outline btn-inspect-seal" data-id="' + capsule.id + '">Inspect Seal</button>');
 
     card.innerHTML =
       '<div class="card-top-bar">' +
@@ -390,8 +401,20 @@ function closeInspectModal() {
 function navigateToUnlock(id) {
   var cap = allCapsules.find(function (c) { return c.id === id; });
   if (cap) {
-    // Cache active capsule for unlock page to pick up seamlessly
+    cap.status = "unlocked";
+    // Mark as unlocked in ChronicleDB
+    if (typeof ChronicleDB !== "undefined" && ChronicleDB.unlockCapsule) {
+      ChronicleDB.unlockCapsule(id);
+    }
+    // Update chronicle_vault_capsules in localStorage
     try {
+      var vaultCaps = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
+      vaultCaps.forEach(function (c) {
+        if (c.id === id) {
+          c.status = "unlocked";
+        }
+      });
+      localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultCaps));
       localStorage.setItem("chronicle_active_capsule", JSON.stringify(cap));
     } catch (e) {
       console.warn("Storage warning:", e);

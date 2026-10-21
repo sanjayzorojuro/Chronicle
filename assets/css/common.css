@@ -202,6 +202,7 @@ main {
 .btn-primary:hover {
   background: var(--color-accent-hover);
   border-color: var(--color-accent-hover);
+  color: var(--color-white) !important;
 }
 
 .btn-outline {

@@ -60,11 +60,18 @@ function buildStats(db, uid) {
     return matchesUser && isNotMyOwn;
   });
 
-  var opened = recipients.filter(function (r) {
-    var matchesUser = (uid && r.user_id && String(r.user_id) === String(uid)) ||
-                      (myUser && (r.recipient_name || "").toLowerCase().includes(myUser)) ||
-                      (myName && (r.recipient_name || "").toLowerCase().includes(myName));
-    return matchesUser && r.status === "unlocked";
+  var opened = capsules.filter(function (c) {
+    var isMyCreated = (uid && c.creator_id && String(c.creator_id) === String(uid)) ||
+                      (myName && (c.creator_name || "").trim().toLowerCase() === myName) ||
+                      (myUser && (c.creator_name || "").trim().toLowerCase() === myUser);
+    var isMyRecipient = recipients.some(function (r) {
+      if (r.capsule_id !== c.capsule_id) return false;
+      var matchesUser = (uid && r.user_id && String(r.user_id) === String(uid)) ||
+                        (myUser && (r.recipient_name || "").toLowerCase().includes(myUser)) ||
+                        (myName && (r.recipient_name || "").toLowerCase().includes(myName));
+      return matchesUser;
+    });
+    return (isMyCreated || isMyRecipient) && (c.status === "unlocked");
   });
 
   var journeys = created.filter(function (c) { return c.parent_capsule_id; });
@@ -76,9 +83,10 @@ function buildEvents(stats) {
   stats.created.forEach(function (c) {
     ev.push({ type: c.parent_capsule_id ? "journey" : "created", label: c.parent_capsule_id ? "Continued journey of" : "Created", title: c.title, ts: new Date(c.created_at).getTime() });
   });
-  stats.opened.forEach(function (r) {
-    var c = stats.byId[r.capsule_id];
-    if (c && r.opened_at) ev.push({ type: "opened", label: "Opened", title: c.title, ts: new Date(r.opened_at).getTime() });
+  stats.opened.forEach(function (c) {
+    var r = recipients.find(function(rec) { return rec.capsule_id === c.capsule_id && rec.opened_at; });
+    var ts = r && r.opened_at ? new Date(r.opened_at).getTime() : (c.unlock_date ? new Date(c.unlock_date).getTime() : Date.now());
+    ev.push({ type: "opened", label: "Opened", title: c.title, ts: ts });
   });
   ev = ev.filter(function (e) { return !isNaN(e.ts); });
   ev.sort(function (a, b) { return b.ts - a.ts; });
