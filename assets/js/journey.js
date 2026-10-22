@@ -4,7 +4,7 @@
    =========================== */
 
 var currentCapsule = null;
-var availableCapsules = [];
+var unlockedCapsules = [];
 var registeredUsersList = [];
 
 /**
@@ -18,10 +18,19 @@ function escapeHTML(str) {
 }
 
 /**
+ * Helper: check if a capsule is unlocked
+ */
+function isCapsuleUnlocked(c) {
+  return c.status === "unlocked" ||
+         c.status === "ready" ||
+         (c.unlockDate && new Date(c.unlockDate).getTime() <= Date.now());
+}
+
+/**
  * Initialize Journey page:
- * 1. Identify which capsule is being viewed/forwarded
- * 2. Populate capsule switcher
- * 3. Render journey timeline
+ * 1. Load ONLY unlocked capsules (sealed/locked capsules are excluded)
+ * 2. Render unlocked capsule cards
+ * 3. Render journey timeline (names only, no messages)
  * 4. Populate recipient dropdown with available users on the site
  */
 function initJourneyPage() {
@@ -32,36 +41,33 @@ function initJourneyPage() {
   }
 
   // Load all capsules belonging to this user from ChronicleDB
+  var allCapsules = [];
   if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultCapsules) {
-    availableCapsules = ChronicleDB.getVaultCapsules(activeUser) || [];
+    allCapsules = ChronicleDB.getVaultCapsules(activeUser) || [];
   }
 
   // Also merge any capsules from localStorage if not already present
   try {
     var storedVault = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
     storedVault.forEach(function (svc) {
-      var exists = availableCapsules.some(function (c) { return c.id === svc.id; });
+      var exists = allCapsules.some(function (c) { return c.id === svc.id; });
       if (!exists) {
-        availableCapsules.push(svc);
+        allCapsules.push(svc);
       }
     });
   } catch (e) {}
 
-  // Filter for unlocked capsules
-  var unlockedCapsules = availableCapsules.filter(function (c) {
-    return c.status === "unlocked" ||
-           c.status === "ready" ||
-           (c.unlockDate && new Date(c.unlockDate).getTime() <= Date.now());
-  });
+  // ONLY unlocked capsules are available on the journey page
+  unlockedCapsules = allCapsules.filter(isCapsuleUnlocked);
 
-  // Determine active capsule to display
+  // Determine active capsule to display (must be unlocked)
   var targetId = new URLSearchParams(window.location.search).get("id");
   if (targetId) {
-    currentCapsule = availableCapsules.find(function (c) { return c.id === targetId; });
+    currentCapsule = unlockedCapsules.find(function (c) { return c.id === targetId; });
     if (!currentCapsule && typeof ChronicleDB !== "undefined" && ChronicleDB.getCapsuleById) {
       var direct = ChronicleDB.getCapsuleById(targetId);
       if (direct) {
-        currentCapsule = {
+        var mapped = {
           id: direct.capsule_id,
           title: direct.title,
           category: direct.category,
@@ -69,37 +75,35 @@ function initJourneyPage() {
           dateCreated: new Date(direct.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),
           message: direct.message,
           chainCount: direct.chain_count || 1,
-          status: direct.status || "unlocked"
+          status: direct.status || "sealed"
         };
+        // Only allow if it's actually unlocked
+        if (isCapsuleUnlocked(mapped)) {
+          currentCapsule = mapped;
+        }
       }
     }
   }
 
-  // Fallback: prefer the first unlocked capsule if no target specified
+  // Fallback: prefer the first unlocked capsule
   if (!currentCapsule && unlockedCapsules.length > 0) {
     currentCapsule = unlockedCapsules[0];
   }
 
-  // Fallback to cached active capsule in localStorage
+  // Fallback to cached active capsule in localStorage (only if unlocked)
   if (!currentCapsule) {
     try {
       var stored = localStorage.getItem("chronicle_active_journey_capsule") || localStorage.getItem("chronicle_active_capsule");
       if (stored) {
         var parsed = JSON.parse(stored);
-        if (parsed && parsed.id) {
+        if (parsed && parsed.id && isCapsuleUnlocked(parsed)) {
           currentCapsule = parsed;
         }
       }
     } catch (e) {}
   }
 
-  // Fallback to first available capsule
-  if (!currentCapsule && availableCapsules.length > 0) {
-    currentCapsule = availableCapsules[0];
-  }
-
   renderTopUnlockedCapsules();
-  setupCapsuleSwitcher();
   renderCapsuleHeader();
   renderTimeline();
   setupRecipientSelect();
@@ -107,10 +111,7 @@ function initJourneyPage() {
   // Announce page ready to screen readers via live region
   var liveRegion = document.getElementById("live-region");
   if (liveRegion) {
-    var capsuleCount = availableCapsules.filter(function (c) {
-      return c.status === "unlocked" || c.status === "ready" || (c.unlockDate && new Date(c.unlockDate).getTime() <= Date.now());
-    }).length;
-    liveRegion.textContent = "Journey page loaded. " + capsuleCount + " unlocked capsule" + (capsuleCount !== 1 ? "s" : "") + " available.";
+    liveRegion.textContent = "Journey page loaded. " + unlockedCapsules.length + " unlocked capsule" + (unlockedCapsules.length !== 1 ? "s" : "") + " available.";
   }
 }
 
@@ -123,17 +124,11 @@ function renderTopUnlockedCapsules() {
   var countBadge = document.getElementById("unlocked-count-badge");
   if (!grid) return;
 
-  var unlocked = availableCapsules.filter(function (c) {
-    return c.status === "unlocked" ||
-           c.status === "ready" ||
-           (c.unlockDate && new Date(c.unlockDate).getTime() <= Date.now());
-  });
-
   if (countBadge) {
-    countBadge.textContent = unlocked.length + (unlocked.length === 1 ? " Capsule Unlocked" : " Capsules Unlocked");
+    countBadge.textContent = unlockedCapsules.length + (unlockedCapsules.length === 1 ? " Capsule Unlocked" : " Capsules Unlocked");
   }
 
-  if (unlocked.length === 0) {
+  if (unlockedCapsules.length === 0) {
     grid.style.display = "none";
     if (emptyBox) emptyBox.style.display = "block";
     return;
@@ -143,7 +138,7 @@ function renderTopUnlockedCapsules() {
   if (emptyBox) emptyBox.style.display = "none";
   grid.innerHTML = "";
 
-  unlocked.forEach(function (cap) {
+  unlockedCapsules.forEach(function (cap) {
     var isCurrent = currentCapsule && currentCapsule.id === cap.id;
     var card = document.createElement("div");
     card.className = "unlocked-card" + (isCurrent ? " is-active-capsule" : "");
@@ -187,9 +182,10 @@ function renderTopUnlockedCapsules() {
 
 /**
  * Select a capsule to be viewed and forwarded in the journey
+ * Only unlocked capsules can be selected
  */
 function selectCapsuleForJourney(capsuleId, shouldScroll) {
-  var found = availableCapsules.find(function (c) { return c.id === capsuleId; });
+  var found = unlockedCapsules.find(function (c) { return c.id === capsuleId; });
   if (found) {
     currentCapsule = found;
     try {
@@ -199,10 +195,6 @@ function selectCapsuleForJourney(capsuleId, shouldScroll) {
     renderCapsuleHeader();
     renderTimeline();
     renderTopUnlockedCapsules();
-
-    // Update switcher select
-    var select = document.getElementById("journey-capsule-select");
-    if (select) select.value = capsuleId;
 
     if (shouldScroll) {
       var contSec = document.querySelector(".continue-section");
@@ -214,76 +206,30 @@ function selectCapsuleForJourney(capsuleId, shouldScroll) {
 }
 
 /**
- * Set up the capsule switcher dropdown
- */
-function setupCapsuleSwitcher() {
-  var select = document.getElementById("journey-capsule-select");
-  var wrapper = document.getElementById("journey-selector-wrapper");
-  if (!select) return;
-
-  if (availableCapsules.length === 0) {
-    if (wrapper) wrapper.style.display = "none";
-    return;
-  }
-
-  if (wrapper) wrapper.style.display = "block";
-  select.innerHTML = "";
-
-  availableCapsules.forEach(function (cap) {
-    var opt = document.createElement("option");
-    opt.value = cap.id;
-    var isUnlocked = cap.status === "unlocked" || cap.status === "ready" || (cap.unlockDate && new Date(cap.unlockDate).getTime() <= Date.now());
-    opt.textContent = (isUnlocked ? "🔓 " : "🔒 ") + cap.title + " (#" + cap.id + ")";
-    if (currentCapsule && currentCapsule.id === cap.id) {
-      opt.selected = true;
-    }
-    select.appendChild(opt);
-  });
-
-  select.onchange = function () {
-    selectCapsuleForJourney(this.value, false);
-  };
-}
-
-/**
- * Render the active capsule information header and forward indicator
+ * Render the active capsule information in the forward indicator
  */
 function renderCapsuleHeader() {
-  var titleEl = document.getElementById("journey-cap-title");
-  var catEl = document.getElementById("journey-cap-category");
-  var metaEl = document.getElementById("journey-cap-meta");
   var continueSection = document.querySelector(".continue-section");
   var forwardName = document.getElementById("forward-cap-name");
   var forwardDetails = document.getElementById("forward-cap-details");
   var submitBtn = document.getElementById("btn-submit-journey");
 
   if (!currentCapsule) {
-    if (titleEl) titleEl.textContent = "No Capsule Selected";
-    if (catEl) catEl.textContent = "Vault";
-    if (metaEl) metaEl.innerHTML = "You don't have any sealed capsules yet. <a href='create.html' style='color:var(--color-accent);font-weight:600;'>Create a capsule</a> in your vault to start its journey!";
     if (continueSection) continueSection.style.display = "none";
     return;
   }
 
   if (continueSection) continueSection.style.display = "block";
-  if (titleEl) titleEl.textContent = '“' + currentCapsule.title + '”';
-  if (catEl) catEl.textContent = currentCapsule.category || "Personal";
-  if (metaEl) {
-    metaEl.innerHTML =
-      'Original Creator: <strong>' + escapeHTML(currentCapsule.creator || "You") + '</strong> &bull; ' +
-      'ID: <code>' + escapeHTML(currentCapsule.id) + '</code> &bull; ' +
-      'Sealed on: ' + escapeHTML(currentCapsule.dateCreated || "Recently");
-  }
 
   // Update Forward Target Indicator
   if (forwardName) {
-    forwardName.textContent = '“' + currentCapsule.title + '” (' + currentCapsule.id + ')';
+    forwardName.textContent = '"' + currentCapsule.title + '" (' + currentCapsule.id + ')';
   }
   if (forwardDetails) {
     forwardDetails.innerHTML =
       'Category: <strong>' + escapeHTML(currentCapsule.category || "Personal") + '</strong> &bull; ' +
       'Originator: <strong>' + escapeHTML(currentCapsule.creator || "You") + '</strong> &bull; ' +
-      'Unlock Schedule: ' + escapeHTML(currentCapsule.displayUnlockDate || currentCapsule.unlockDate || "Locked in Vault");
+      'Unlock Schedule: ' + escapeHTML(currentCapsule.displayUnlockDate || currentCapsule.unlockDate || "Ready to Unlock");
   }
 
   // Update submit button text to clearly state the capsule
@@ -291,12 +237,12 @@ function renderCapsuleHeader() {
     var shortTitle = currentCapsule.title.length > 22
       ? currentCapsule.title.slice(0, 22) + "…"
       : currentCapsule.title;
-    submitBtn.textContent = 'Forward “' + shortTitle + '” →';
+    submitBtn.textContent = 'Forward "' + shortTitle + '" →';
   }
 }
 
 /**
- * Render timeline chain nodes
+ * Render timeline chain nodes — simplified to names and actions only (no messages)
  */
 function renderTimeline() {
   var list = document.getElementById("timeline-list");
@@ -306,7 +252,7 @@ function renderTimeline() {
   list.innerHTML = "";
 
   if (!currentCapsule) {
-    list.innerHTML = '<li class="timeline-item"><div class="timeline-dot"></div><div class="timeline-card"><div class="timeline-name">No Journey Data</div><div class="timeline-action">Create or receive a capsule to view its chain here.</div></div></li>';
+    list.innerHTML = '<li class="timeline-item"><div class="timeline-dot"></div><div class="timeline-card"><div class="timeline-name">No Journey Data</div><div class="timeline-action">Select an unlocked capsule above to view its chain.</div></div></li>';
     return;
   }
 
@@ -323,28 +269,25 @@ function renderTimeline() {
     chain = [
       {
         name: currentCapsule.creator || (activeUser ? activeUser.name : "Author"),
-        action: "Created and Sealed Capsule",
+        action: "Created capsule",
         date: currentCapsule.dateCreated || "Day 1",
-        active: false,
-        message: currentCapsule.message
+        active: false
       },
       {
         name: (activeUser ? activeUser.name : "You") + " (Current Holder)",
         action: "Holding capsule — ready to forward",
         date: "Today",
-        active: true,
-        message: null
+        active: true
       }
     ];
   } else {
-    // Add recorded hops
+    // Add recorded hops — names and action only, no messages
     rawChain.forEach(function (h) {
       chain.push({
         name: h.name,
         action: h.action,
         date: h.date,
-        active: false,
-        message: h.message
+        active: false
       });
     });
 
@@ -359,8 +302,7 @@ function renderTimeline() {
       name: currentHolderName + " (Current Holder)",
       action: "Holding capsule — ready to continue the journey",
       date: "Active Now",
-      active: true,
-      message: null
+      active: true
     });
   }
 
@@ -369,17 +311,12 @@ function renderTimeline() {
     var li = document.createElement("li");
     li.className = "timeline-item" + (node.active ? " active" : "");
 
-    var messageSnippet = node.message
-      ? '<p style="margin: 0.5rem 0 0; font-size: 0.875rem; color: var(--color-text); font-style: italic; background: #fafafa; padding: 0.5rem 0.75rem; border-radius: 4px; border-left: 3px solid var(--color-accent);">' + escapeHTML(node.message) + '</p>'
-      : '';
-
     li.innerHTML =
       '<div class="timeline-dot" aria-hidden="true"></div>' +
       '<div class="timeline-card">' +
       '  <div class="timeline-name">' + escapeHTML(node.name) + '</div>' +
       '  <div class="timeline-action"><span>' + escapeHTML(node.action) + '</span></div>' +
-      '  <div class="timeline-date" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 0.25rem;">📅 ' + escapeHTML(node.date) + '</div>' +
-      messageSnippet +
+      '  <div class="timeline-date" style="font-size: 0.8rem; color: var(--color-text-secondary); margin-top: 0.25rem;"><span aria-hidden="true">📅</span> ' + escapeHTML(node.date) + '</div>' +
       '</div>';
 
     list.appendChild(li);
@@ -484,7 +421,13 @@ function handleContinueForm(event) {
   }
 
   if (!currentCapsule) {
-    showToast("Please select a capsule first.", "info");
+    showToast("Please select an unlocked capsule first.", "info");
+    return;
+  }
+
+  // Double-check capsule is unlocked before forwarding
+  if (!isCapsuleUnlocked(currentCapsule)) {
+    showToast("This capsule is still sealed and cannot be forwarded.", "info");
     return;
   }
 
@@ -505,12 +448,14 @@ function handleContinueForm(event) {
   // Persist chained hop to ChronicleDB
   if (typeof ChronicleDB !== "undefined" && ChronicleDB.continueJourney) {
     ChronicleDB.continueJourney(currentCapsule.id, targetUser, forwardMessage, activeUser);
-    availableCapsules = ChronicleDB.getVaultCapsules(activeUser) || availableCapsules;
+
+    // Reload unlocked capsules
+    var allCaps = ChronicleDB.getVaultCapsules(activeUser) || [];
+    unlockedCapsules = allCaps.filter(isCapsuleUnlocked);
   }
 
   // Update displays
   renderTopUnlockedCapsules();
-  setupCapsuleSwitcher();
   renderTimeline();
 
   // Show friendly success toast
