@@ -3,91 +3,204 @@ var profileDb = null;
 var profileUser = null;
 var activityEvents = [];
 
+/**
+ * Load database from ChronicleDB with fallback to localStorage
+ */
 function loadDb() {
-  try { return JSON.parse(ChronicleDB.exportJSON()); } catch (e) { return { users: [], capsules: [], capsule_recipients: [] }; }
+  try {
+    if (typeof ChronicleDB !== "undefined" && ChronicleDB.exportJSON) {
+      return JSON.parse(ChronicleDB.exportJSON());
+    }
+  } catch (e) {}
+
+  try {
+    var raw = localStorage.getItem(DB_STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+
+  return { users: [], capsules: [], capsule_recipients: [] };
 }
 
+/**
+ * Identify currently active user profile
+ */
 function findProfileUser(db) {
   var active = null;
-  try { active = JSON.parse(localStorage.getItem("chronicle_active_user")); } catch (e) {}
-  var users = db.users || [];
-  var found = null;
-  if (active) {
-    found = users.filter(function (u) { return u.username === active.username; })[0] ||
-            users.filter(function (u) { return u.email === active.email; })[0] || null;
-    if (!found) {
-      found = {
-        user_id: active.id || 999,
-        username: active.username,
-        full_name: active.name || active.username,
-        email: active.email || "",
-        avatar: active.avatar || active.username.slice(0, 2).toUpperCase()
-      };
+  try {
+    if (typeof getActiveUser === "function") {
+      active = getActiveUser();
+    } else {
+      active = JSON.parse(localStorage.getItem("chronicle_active_user"));
     }
-  }
-  return { user: found, signedIn: !!found };
+  } catch (e) {}
+
+  if (!active) return { user: null, signedIn: false };
+
+  // Pure session values take absolute precedence:
+  var actUser = (active.username || "").trim();
+  var actName = (active.name || active.full_name || active.username || "").trim();
+  var actEmail = (active.email || "").trim();
+  var actId = active.id || active.user_id || 1;
+
+  // Try to find matching user in db to align ID:
+  var users = db.users || [];
+  var dbMatch = users.filter(function (u) {
+    if (actUser && u.username && u.username.toLowerCase() === actUser.toLowerCase()) return true;
+    if (actEmail && u.email && u.email.toLowerCase() === actEmail.toLowerCase()) return true;
+    if (actId && u.user_id && String(u.user_id) === String(actId)) return true;
+    return false;
+  })[0];
+
+  var userObj = {
+    user_id: (dbMatch && dbMatch.user_id) ? dbMatch.user_id : actId,
+    username: actUser || (dbMatch && dbMatch.username) || "user",
+    full_name: actName || (dbMatch && (dbMatch.full_name || dbMatch.name)) || actUser,
+    email: actEmail || (dbMatch && dbMatch.email) || "",
+    avatar: active.avatar || (dbMatch && dbMatch.avatar) || (actName ? actName.slice(0, 2).toUpperCase() : "CH")
+  };
+  return { user: userObj, signedIn: true };
 }
 
 function isUnlocked(c) {
-  var t = new Date(c.unlock_date).getTime();
+  if (c.status === "unlocked") return true;
+  var unlockDate = c.unlock_date || c.unlockDate;
+  if (!unlockDate) return false;
+  var t = new Date(unlockDate).getTime();
   return !isNaN(t) && t <= Date.now();
 }
 
-function buildStats(db, uid) {
-  var capsules = db.capsules || [];
-  var recipients = db.capsule_recipients || [];
-  var byId = {};
-  capsules.forEach(function (c) { byId[c.capsule_id] = c; });
+/**
+ * Load vault capsules and harmonize DB + localStorage
+ */
+function getUnifiedVaultCapsules(db, activeUser) {
+  var list = [];
+  var seenIds = {};
 
-  var myName = profileUser ? (profileUser.full_name || profileUser.name || "").trim().toLowerCase() : "";
-  var myUser = profileUser ? (profileUser.username || "").trim().toLowerCase() : "";
-
-  var created = capsules.filter(function (c) {
-    if (uid && c.creator_id && String(c.creator_id) === String(uid)) return true;
-    if (myName && (c.creator_name || "").trim().toLowerCase() === myName) return true;
-    if (myUser && (c.creator_name || "").trim().toLowerCase() === myUser) return true;
-    return false;
-  });
-
-  var received = recipients.filter(function (r) {
-    var isSelf = (r.recipient_name || "").trim().toLowerCase().startsWith("myself");
-    if (isSelf) return false;
-    var matchesUser = (uid && r.user_id && String(r.user_id) === String(uid)) ||
-                      (myUser && (r.recipient_name || "").toLowerCase().includes(myUser)) ||
-                      (myName && (r.recipient_name || "").toLowerCase().includes(myName));
-    var cap = byId[r.capsule_id];
-    var isNotMyOwn = cap ? (String(cap.creator_id) !== String(uid) && (cap.creator_name || "").toLowerCase() !== myName) : true;
-    return matchesUser && isNotMyOwn;
-  });
-
-  var opened = capsules.filter(function (c) {
-    var isMyCreated = (uid && c.creator_id && String(c.creator_id) === String(uid)) ||
-                      (myName && (c.creator_name || "").trim().toLowerCase() === myName) ||
-                      (myUser && (c.creator_name || "").trim().toLowerCase() === myUser);
-    var isMyRecipient = recipients.some(function (r) {
-      if (r.capsule_id !== c.capsule_id) return false;
-      var matchesUser = (uid && r.user_id && String(r.user_id) === String(uid)) ||
-                        (myUser && (r.recipient_name || "").toLowerCase().includes(myUser)) ||
-                        (myName && (r.recipient_name || "").toLowerCase().includes(myName));
-      return matchesUser;
+  // 1. First, check ChronicleDB vault capsules
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultCapsules) {
+    var dbCaps = ChronicleDB.getVaultCapsules(activeUser) || [];
+    dbCaps.forEach(function (c) {
+      if (c && c.id && !seenIds[c.id]) {
+        seenIds[c.id] = true;
+        list.push(c);
+      }
     });
-    return (isMyCreated || isMyRecipient) && (c.status === "unlocked");
-  });
+  }
 
-  var journeys = created.filter(function (c) { return c.parent_capsule_id; });
-  return { created: created, received: received, opened: opened, journeys: journeys, byId: byId };
+  // 2. Also merge from localStorage chronicle_vault_capsules (local fallback & direct seals)
+  try {
+    var stored = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
+    if (Array.isArray(stored)) {
+      stored.forEach(function (c) {
+        if (c && c.id) {
+          if (!seenIds[c.id]) {
+            seenIds[c.id] = true;
+            list.push(c);
+          } else {
+            // If already seen, check if local storage has updated status === "unlocked"
+            if (c.status === "unlocked") {
+              list.forEach(function (item) {
+                if (item.id === c.id) item.status = "unlocked";
+              });
+            }
+          }
+        }
+      });
+    }
+  } catch (e) {}
+
+  return list;
 }
 
-function buildEvents(stats) {
+/**
+ * Calculate user stats matching exact vault and recipient logic
+ */
+function buildStats(db, uid, vaultCapsules) {
+  var myName = profileUser ? (profileUser.full_name || profileUser.name || "").trim().toLowerCase() : "";
+  var myUser = profileUser ? (profileUser.username || "").trim().toLowerCase() : "";
+  var myEmail = profileUser ? (profileUser.email || "").trim().toLowerCase() : "";
+
+  var created = [];
+  var received = [];
+  var opened = [];
+  var journeys = [];
+
+  vaultCapsules.forEach(function (cap) {
+    var creator = (cap.creator || "").trim().toLowerCase();
+    var creatorId = cap.creatorId ? String(cap.creatorId) : "";
+    var recipient = (cap.recipient || "").trim().toLowerCase();
+
+    var isCreated = false;
+    if (creator === "myself" || creator === "you") isCreated = true;
+    if (myName && (creator === myName || creator.includes(myName))) isCreated = true;
+    if (myUser && (creator === myUser || creator.includes(myUser))) isCreated = true;
+    if (uid && creatorId && creatorId === String(uid)) isCreated = true;
+
+    var isReceived = false;
+    if (!isCreated) {
+      if (myUser && recipient.includes(myUser)) isReceived = true;
+      if (myName && recipient.includes(myName)) isReceived = true;
+      if (myEmail && recipient.includes(myEmail)) isReceived = true;
+    }
+
+    if (isCreated) {
+      created.push(cap);
+    } else if (isReceived) {
+      received.push(cap);
+    }
+
+    // Check if opened / unlocked
+    if (cap.status === "unlocked" || isUnlocked(cap)) {
+      opened.push(cap);
+    }
+
+    if (cap.parentCapsuleId || cap.parent_capsule_id) {
+      journeys.push(cap);
+    }
+  });
+
+  return {
+    created: created,
+    received: received,
+    opened: opened,
+    journeys: journeys
+  };
+}
+
+/**
+ * Construct chronological activity items for the timeline
+ */
+function buildEvents(stats, db) {
   var ev = [];
+
   stats.created.forEach(function (c) {
-    ev.push({ type: c.parent_capsule_id ? "journey" : "created", label: c.parent_capsule_id ? "Continued journey of" : "Created", title: c.title, ts: new Date(c.created_at).getTime() });
+    var isJourney = !!(c.parentCapsuleId || c.parent_capsule_id);
+    var dateStr = c.created_at || c.dateCreated;
+    var ts = dateStr ? new Date(dateStr).getTime() : Date.now();
+    if (isNaN(ts)) ts = Date.now();
+
+    ev.push({
+      type: isJourney ? "journey" : "created",
+      label: isJourney ? "Continued journey of" : "Created capsule",
+      title: c.title,
+      ts: ts
+    });
   });
+
   stats.opened.forEach(function (c) {
-    var r = recipients.find(function(rec) { return rec.capsule_id === c.capsule_id && rec.opened_at; });
-    var ts = r && r.opened_at ? new Date(r.opened_at).getTime() : (c.unlock_date ? new Date(c.unlock_date).getTime() : Date.now());
-    ev.push({ type: "opened", label: "Opened", title: c.title, ts: ts });
+    var dateStr = c.opened_at || c.unlock_date || c.unlockDate;
+    var ts = dateStr ? new Date(dateStr).getTime() : Date.now();
+    if (isNaN(ts)) ts = Date.now();
+
+    ev.push({
+      type: "opened",
+      label: "Opened capsule",
+      title: c.title,
+      ts: ts
+    });
   });
+
+  // Filter valid timestamps and sort newest first
   ev = ev.filter(function (e) { return !isNaN(e.ts); });
   ev.sort(function (a, b) { return b.ts - a.ts; });
   return ev;
@@ -97,64 +210,111 @@ function formatDate(ts) {
   return new Date(ts).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
 }
 
+/**
+ * Render activity items based on active chip filter
+ */
 function renderTimeline(filter) {
   var list = document.getElementById("activity-list");
   var empty = document.getElementById("activity-empty");
+  if (!list || !empty) return;
+
   list.innerHTML = "";
-  var shown = activityEvents.filter(function (e) { return filter === "all" || e.type === filter; });
+  var currentFilter = filter || "all";
+  var shown = activityEvents.filter(function (e) {
+    return currentFilter === "all" || e.type === currentFilter;
+  });
 
   shown.forEach(function (e) {
     var li = document.createElement("li");
     li.className = "timeline-item type-" + e.type;
-    var text = document.createElement("div"); text.className = "timeline-text";
+
+    var text = document.createElement("div");
+    text.className = "timeline-text";
     text.appendChild(document.createTextNode(e.label + " "));
-    var em = document.createElement("em"); em.textContent = "“" + e.title + "”"; text.appendChild(em);
-    var date = document.createElement("div"); date.className = "timeline-date"; date.textContent = formatDate(e.ts);
-    li.appendChild(text); li.appendChild(date);
+
+    var em = document.createElement("em");
+    em.textContent = "“" + (e.title || "Untitled Capsule") + "”";
+    text.appendChild(em);
+
+    var date = document.createElement("div");
+    date.className = "timeline-date";
+    date.textContent = formatDate(e.ts);
+
+    li.appendChild(text);
+    li.appendChild(date);
     list.appendChild(li);
   });
+
   empty.style.display = shown.length ? "none" : "block";
 }
 
-function renderShareList() {
+/**
+ * Populate Share on Time Wall section
+ */
+function renderShareList(vaultCapsules) {
   var list = document.getElementById("share-list");
   var empty = document.getElementById("share-empty");
+  if (!list || !empty) return;
+
   list.innerHTML = "";
-  var mine = (profileDb.capsules || []).filter(function (c) {
-    return c.creator_id === profileUser.user_id && isUnlocked(c);
+  var mine = (vaultCapsules || []).filter(function (c) {
+    return isUnlocked(c);
   });
 
   mine.forEach(function (c) {
     var li = document.createElement("li");
     var info = document.createElement("div");
-    var t = document.createElement("strong"); t.textContent = c.title;
-    var d = document.createElement("span"); d.className = "timeline-date";
-    d.textContent = "Unlocked " + formatDate(new Date(c.unlock_date).getTime()) + " · " + (c.is_public ? "Public" : "Private");
-    info.appendChild(t); info.appendChild(d);
+    var t = document.createElement("strong");
+    t.textContent = c.title;
+
+    var d = document.createElement("span");
+    d.className = "timeline-date";
+    var unlockDateStr = c.displayUnlockDate || c.display_unlock_date || formatDate(new Date(c.unlockDate || c.unlock_date).getTime());
+    d.textContent = "Unlocked " + unlockDateStr + " · " + (c.isPublic || c.is_public ? "Public" : "Private");
+    info.appendChild(t);
+    info.appendChild(d);
 
     var btn = document.createElement("button");
-    btn.type = "button"; btn.className = "btn btn-outline";
-    btn.textContent = c.is_public ? "Make private" : "Make public";
-    btn.addEventListener("click", function () { setCapsulePublic(c.capsule_id, !c.is_public); });
+    btn.type = "button";
+    btn.className = "btn btn-outline";
+    var isPublic = !!(c.isPublic || c.is_public);
+    btn.textContent = isPublic ? "Make private" : "Make public";
+    btn.addEventListener("click", function () {
+      setCapsulePublic(c.id, !isPublic);
+    });
 
-    li.appendChild(info); li.appendChild(btn);
+    li.appendChild(info);
+    li.appendChild(btn);
     list.appendChild(li);
   });
+
   empty.style.display = mine.length ? "none" : "block";
 }
 
 function setCapsulePublic(capsuleId, makePublic) {
   var db = loadDb();
   (db.capsules || []).forEach(function (c) {
-    if (c.capsule_id === capsuleId && c.creator_id === profileUser.user_id) c.is_public = makePublic;
+    if (c.capsule_id === capsuleId) c.is_public = makePublic;
   });
-  try { localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db)); } catch (e) { console.warn(e); }
-  profileDb = db;
-  renderShareList();
-  showToast(makePublic ? "Capsule is now public on the Time Wall." : "Capsule is now private.", "success");
+  try { localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db)); } catch (e) {}
+
+  try {
+    var vaultCaps = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
+    vaultCaps.forEach(function (c) {
+      if (c.id === capsuleId) c.isPublic = makePublic;
+    });
+    localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultCaps));
+  } catch (e) {}
+
+  var vaultCapsules = getUnifiedVaultCapsules(db, profileUser);
+  renderShareList(vaultCapsules);
+  if (typeof showToast === "function") {
+    showToast(makePublic ? "Capsule is now public on the Time Wall." : "Capsule is now private.", "success");
+  }
 }
 
 function animateCount(el, target) {
+  if (!el) return;
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduce || target === 0) { el.textContent = target; return; }
   var n = 0, step = Math.max(1, Math.ceil(target / 20));
@@ -171,33 +331,46 @@ document.addEventListener("DOMContentLoaded", function () {
   profileUser = res.user;
 
   if (!profileUser) {
-    document.getElementById("profile-content").style.display = "none";
-    document.getElementById("signin-prompt").style.display = "block";
+    var contentEl = document.getElementById("profile-content");
+    var promptEl = document.getElementById("signin-prompt");
+    if (contentEl) contentEl.style.display = "none";
+    if (promptEl) promptEl.style.display = "block";
     return;
   }
 
-  var name = profileUser.full_name;
+  var name = profileUser.full_name || profileUser.name || profileUser.username;
   var initials = profileUser.avatar || name.split(" ").map(function (p) { return p.charAt(0); }).join("").slice(0, 2).toUpperCase();
-  document.getElementById("pf-avatar").textContent = initials;
-  document.getElementById("pf-name").textContent = name;
-  document.getElementById("pf-username").textContent = "@" + profileUser.username;
-  document.getElementById("pf-email").textContent = profileUser.email || "";
+  var avatarEl = document.getElementById("pf-avatar");
+  var nameEl = document.getElementById("pf-name");
+  var userEl = document.getElementById("pf-username");
+  var emailEl = document.getElementById("pf-email");
 
-  var stats = buildStats(profileDb, profileUser.user_id);
+  if (avatarEl) avatarEl.textContent = initials;
+  if (nameEl) nameEl.textContent = name;
+  if (userEl) userEl.textContent = "@" + profileUser.username;
+  if (emailEl) emailEl.textContent = profileUser.email || "";
+
+  // Unify vault capsules across ChronicleDB and localStorage
+  var vaultCapsules = getUnifiedVaultCapsules(profileDb, profileUser);
+  var stats = buildStats(profileDb, profileUser.user_id, vaultCapsules);
+
   animateCount(document.getElementById("pf-created"), stats.created.length);
   animateCount(document.getElementById("pf-received"), stats.received.length);
   animateCount(document.getElementById("pf-opened"), stats.opened.length);
   animateCount(document.getElementById("pf-journeys"), stats.journeys.length);
 
-  activityEvents = buildEvents(stats);
+  activityEvents = buildEvents(stats, profileDb);
   renderTimeline("all");
-  renderShareList();
+  renderShareList(vaultCapsules);
 
-  document.querySelectorAll(".activity-filter .chip").forEach(function (btn) {
+  // Filter chip buttons
+  var filterChips = document.querySelectorAll(".activity-filter .chip");
+  filterChips.forEach(function (btn) {
     btn.addEventListener("click", function () {
-      document.querySelectorAll(".activity-filter .chip").forEach(function (b) { b.classList.remove("active"); });
+      filterChips.forEach(function (b) { b.classList.remove("active"); });
       btn.classList.add("active");
-      renderTimeline(btn.getAttribute("data-type"));
+      var filterType = btn.getAttribute("data-type") || "all";
+      renderTimeline(filterType);
     });
   });
 
