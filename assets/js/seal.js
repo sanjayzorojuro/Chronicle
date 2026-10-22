@@ -265,7 +265,7 @@ function sealCapsule(event) {
   }
 
   var isPublic = document.getElementById("setting-public") ? document.getElementById("setting-public").checked : false;
-  var notifyEmail = document.getElementById("setting-notify") ? document.getElementById("setting-notify").checked : true;
+  var notifyEmail = false;
   var liveRegion = document.getElementById("live-region");
 
   // Show Sealing Modal
@@ -321,10 +321,7 @@ function sealCapsule(event) {
   setTimeout(function () {
     if (modalTitle) modalTitle.textContent = "✓ Capsule Sealed Successfully!";
     if (modalDesc) {
-      var emailNotice = notifyEmail
-        ? "<br><div style='margin-top:0.75rem;padding:0.6rem 0.8rem;background:#eef6ff;border:1px solid #bfdbfe;border-radius:6px;font-size:0.85rem;color:#1e40af;'>📧 <strong>Email Notification Verified:</strong> An arrival dispatch email will be automatically delivered to <strong>" + escapeHTML(creatorEmail || "your registered email") + "</strong> on the unlock date.</div>"
-        : "";
-      modalDesc.innerHTML = "Capsule <strong>#" + capsuleRecord.id + "</strong> is now permanently locked and encrypted.<br>Stored safely in your vault until <strong>" + escapeHTML(capsuleRecord.displayUnlockDate) + "</strong>." + emailNotice;
+      modalDesc.innerHTML = "Capsule <strong>#" + capsuleRecord.id + "</strong> is now permanently locked and encrypted.<br>Stored safely in your vault until <strong>" + escapeHTML(capsuleRecord.displayUnlockDate) + "</strong>.";
     }
     if (modalActions) modalActions.style.display = "flex";
     if (liveRegion) liveRegion.textContent = "Capsule sealed successfully.";

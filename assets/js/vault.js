@@ -362,9 +362,9 @@ function openInspectModal(id) {
   var noticeEl = document.getElementById("modal-cap-notice");
   if (noticeEl) {
     if (timer.isReady || cap.status === "unlocked") {
-      noticeEl.innerHTML = "🔓 <strong>Ready to Open:</strong> The wait is over. An arrival notification dispatch has been confirmed and verified for registered recipient(s).";
+      noticeEl.innerHTML = "🔓 <strong>Ready to Open:</strong> The wait is over. The countdown has completed and this capsule is ready to be opened.";
     } else {
-      noticeEl.innerHTML = "🔒 <strong>Cryptographically locked:</strong> The capsule message is encrypted and will become readable once the countdown hits zero.<br><small style='color:var(--color-accent,#2563eb);display:inline-block;margin-top:0.35rem;'>📧 Email Notification Dispatch is verified and scheduled for delivery on " + (cap.displayUnlockDate || "unlock date") + ".</small>";
+      noticeEl.innerHTML = "🔒 <strong>Cryptographically locked:</strong> The capsule message is encrypted and will become readable once the countdown hits zero.";
     }
   }
 
