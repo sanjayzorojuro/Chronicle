@@ -103,6 +103,15 @@ function initJourneyPage() {
   renderCapsuleHeader();
   renderTimeline();
   setupRecipientSelect();
+
+  // Announce page ready to screen readers via live region
+  var liveRegion = document.getElementById("live-region");
+  if (liveRegion) {
+    var capsuleCount = availableCapsules.filter(function (c) {
+      return c.status === "unlocked" || c.status === "ready" || (c.unlockDate && new Date(c.unlockDate).getTime() <= Date.now());
+    }).length;
+    liveRegion.textContent = "Journey page loaded. " + capsuleCount + " unlocked capsule" + (capsuleCount !== 1 ? "s" : "") + " available.";
+  }
 }
 
 /**
@@ -148,16 +157,16 @@ function renderTopUnlockedCapsules() {
     card.innerHTML =
       '<div class="unlocked-card-top">' +
       '  <span class="unlocked-tag">' + escapeHTML(cap.category || "Memory") + '</span>' +
-      '  <span class="unlocked-status-badge">🔓 Unlocked</span>' +
+      '  <span class="unlocked-status-badge"><span aria-hidden="true">🔓</span> Unlocked</span>' +
       '</div>' +
       '<div class="unlocked-card-title">' + escapeHTML(cap.title) + '</div>' +
-      '<div class="unlocked-card-meta">From <strong>' + escapeHTML(cap.creator || "Author") + '</strong> • #' + escapeHTML(cap.id) + '</div>' +
+      '<div class="unlocked-card-meta">From <strong>' + escapeHTML(cap.creator || "Author") + '</strong> • <span aria-hidden="true">#</span>' + escapeHTML(cap.id) + '</div>' +
       '<div class="unlocked-card-excerpt">"' + escapeHTML(snippet) + '"</div>' +
       '<div class="unlocked-card-footer">' +
-      '  <span class="unlocked-chain-badge">⛓️ ' + ((cap.chainCount && cap.chainCount > 1) ? cap.chainCount + ' hops' : '1 hop (Root)') + '</span>' +
+      '  <span class="unlocked-chain-badge"><span aria-hidden="true">⛓️</span> ' + ((cap.chainCount && cap.chainCount > 1) ? cap.chainCount + ' hops' : '1 hop (Root)') + '</span>' +
       '  ' + (isCurrent
-             ? '<button type="button" class="btn btn-primary" style="font-size:0.75rem;padding:0.35rem 0.75rem;cursor:default;" disabled>✓ Selected</button>'
-             : '<button type="button" class="btn btn-outline" style="font-size:0.75rem;padding:0.35rem 0.75rem;pointer-events:none;">Pass Forward →</button>'
+             ? '<span class="btn btn-primary" aria-hidden="true" style="font-size:0.75rem;padding:0.35rem 0.75rem;cursor:default;">✓ Selected</span>'
+             : '<span class="btn btn-outline" aria-hidden="true" style="font-size:0.75rem;padding:0.35rem 0.75rem;">Pass Forward →</span>'
            ) +
       '</div>';
 
@@ -463,11 +472,13 @@ function handleContinueForm(event) {
 
   if (!recipientSelect) return;
   if (recipientGroup) recipientGroup.classList.remove("has-error");
+  recipientSelect.removeAttribute("aria-invalid");
 
   var recipientUsername = recipientSelect.value.trim();
   if (!recipientUsername) {
     if (recipientGroup) recipientGroup.classList.add("has-error");
     if (recipientError) recipientError.textContent = "Please select a registered user to forward this capsule to.";
+    recipientSelect.setAttribute("aria-invalid", "true");
     recipientSelect.focus();
     return;
   }
@@ -484,6 +495,7 @@ function handleContinueForm(event) {
   if (!targetUser) {
     if (recipientGroup) recipientGroup.classList.add("has-error");
     if (recipientError) recipientError.textContent = "Selected user not found.";
+    recipientSelect.setAttribute("aria-invalid", "true");
     return;
   }
 
@@ -505,8 +517,15 @@ function handleContinueForm(event) {
   var recipientDisplayName = targetUser.full_name || targetUser.name || targetUser.username;
   showToast("Capsule forwarded to " + recipientDisplayName + "! They will find it in their vault.", "success", 4500);
 
+  // Announce to screen readers via live region
+  var liveRegion = document.getElementById("live-region");
+  if (liveRegion) {
+    liveRegion.textContent = "Capsule successfully forwarded to " + recipientDisplayName + ".";
+  }
+
   // Reset form
   recipientSelect.value = "";
+  recipientSelect.removeAttribute("aria-invalid");
   if (messageInput) messageInput.value = "";
 }
 
