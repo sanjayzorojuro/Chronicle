@@ -196,18 +196,21 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  padding: 0.2rem 0.5rem;
+  letter-spacing: 0.04em;
+  padding: 0.25rem 0.55rem;
   border-radius: 4px;
-  background: var(--color-accent-light, #eff6ff);
-  color: var(--color-accent, #2563eb);
+  background: #f1f5f9;
+  color: #1e293b; /* Deep slate on light gray: contrast > 11:1 (AAA) */
+  border: 1px solid #cbd5e1;
 }
 
 .unlocked-status-badge {
   font-size: 0.75rem;
-  font-weight: 600;
-  color: #16a34a;
+  font-weight: 700;
+  color: #14532d; /* Deep forest green: contrast > 8.2:1 (AAA) */
   background: #dcfce7;
-  padding: 0.2rem 0.5rem;
+  border: 1px solid #86efac;
+  padding: 0.25rem 0.6rem;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
@@ -291,4 +294,21 @@
   .unlocked-card {
     transition: none;
   }
+}
+
+
+/* --- High Contrast Fixes for WAVE Accessibility --- */
+#unlocked-count-badge {
+  background: #8f3600 !important;
+  color: #ffffff !important; /* White on dark terracotta: contrast 7.8:1 (AAA) */
+  border: 1px solid #7c2d12 !important;
+}
+
+#forward-target-indicator {
+  background: #fff7ed !important;
+  border-left: 4px solid #8f3600 !important;
+}
+
+#forward-target-indicator > div:first-child {
+  color: #8f3600 !important; /* Dark terracotta on light cream: contrast 7.1:1 (AAA) */
 }
