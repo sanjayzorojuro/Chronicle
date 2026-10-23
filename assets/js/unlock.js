@@ -147,14 +147,6 @@ function renderCapsule() {
     localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultCaps));
   } catch (e) {}
 
-  // Update verified email notification dispatch notice
-  var activeUser = typeof getActiveUser === "function" ? getActiveUser() : null;
-  var userEmail = (activeUser && activeUser.email) ? activeUser.email : (demoCapsule.recipientEmail || "your registered email");
-  var emailBox = document.getElementById("email-dispatch-notice");
-  var emailEl = document.getElementById("dispatch-recipient-email");
-  if (emailEl) emailEl.textContent = userEmail;
-  if (emailBox) emailBox.style.display = "flex";
-
   // Link Continue Journey button with capsule context
   var journeyBtn = document.querySelector(".capsule-actions a[href*='journey.html']");
   if (journeyBtn && demoCapsule.id) {
