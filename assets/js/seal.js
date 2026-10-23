@@ -337,6 +337,7 @@ function saveCapsuleToVault(newCapsule) {
   if (typeof ChronicleDB !== "undefined" && ChronicleDB.createCapsule) {
     ChronicleDB.createCapsule(
       {
+        id: newCapsule.id,
         title: newCapsule.title,
         message: newCapsule.message,
         category: newCapsule.category,

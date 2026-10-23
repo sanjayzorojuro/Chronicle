@@ -251,7 +251,7 @@ var ChronicleDB = (function () {
       var creatorId = user ? (user.id || user.user_id || 1) : 1;
       var creatorName = user ? (user.name || user.full_name || user.username || "Creator") : "Creator";
 
-      var newCapId = "CHR-2026-" + Math.floor(100 + Math.random() * 900);
+      var newCapId = capsuleData.id || capsuleData.capsule_id || ("CHR-2026-" + Math.floor(100 + Math.random() * 900));
       var creatorEmail = user ? (user.email || "") : "";
       var newCapsule = {
         capsule_id: newCapId,
@@ -369,7 +369,7 @@ var ChronicleDB = (function () {
       var title = orig ? orig.title : "Journey Capsule";
       var category = orig ? orig.category : "Friendship";
 
-      var newCapId = "CHR-2026-" + Math.floor(100 + Math.random() * 900);
+      var newCapId = capsuleData.id || capsuleData.capsule_id || ("CHR-2026-" + Math.floor(100 + Math.random() * 900));
       var chainedCapsule = {
         capsule_id: newCapId,
         creator_id: senderId,

@@ -75,34 +75,48 @@ function isUnlocked(c) {
 function getUnifiedVaultCapsules(db, activeUser) {
   var list = [];
   var seenIds = {};
+  var seenKeys = {};
 
-  // 1. First, check ChronicleDB vault capsules
+  function makeKey(cap) {
+    var t = (cap.title || "").trim().toLowerCase();
+    var u = (cap.unlockDate || cap.unlock_date || "").trim();
+    var m = (cap.message || "").trim().toLowerCase().slice(0, 30);
+    return t + "|" + u + "|" + m;
+  }
+
+  // 1. First, load ChronicleDB vault capsules
   if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultCapsules) {
     var dbCaps = ChronicleDB.getVaultCapsules(activeUser) || [];
     dbCaps.forEach(function (c) {
-      if (c && c.id && !seenIds[c.id]) {
-        seenIds[c.id] = true;
-        list.push(c);
+      if (c && c.id) {
+        var key = makeKey(c);
+        if (!seenIds[c.id] && !seenKeys[key]) {
+          seenIds[c.id] = true;
+          if (key !== "||") seenKeys[key] = true;
+          list.push(c);
+        }
       }
     });
   }
 
-  // 2. Also merge from localStorage chronicle_vault_capsules (local fallback & direct seals)
+  // 2. Also merge from localStorage chronicle_vault_capsules without duplicating
   try {
     var stored = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
     if (Array.isArray(stored)) {
       stored.forEach(function (c) {
         if (c && c.id) {
-          if (!seenIds[c.id]) {
-            seenIds[c.id] = true;
-            list.push(c);
-          } else {
-            // If already seen, check if local storage has updated status === "unlocked"
+          var key = makeKey(c);
+          if (seenIds[c.id] || (key !== "||" && seenKeys[key])) {
+            // Update unlocked status if already seen
             if (c.status === "unlocked") {
               list.forEach(function (item) {
-                if (item.id === c.id) item.status = "unlocked";
+                if (item.id === c.id || makeKey(item) === key) item.status = "unlocked";
               });
             }
+          } else {
+            seenIds[c.id] = true;
+            if (key !== "||") seenKeys[key] = true;
+            list.push(c);
           }
         }
       });
