@@ -232,6 +232,7 @@ var ChronicleDB = (function () {
           unlockDate: c.unlock_date,
           displayUnlockDate: c.display_unlock_date,
           dateCreated: new Date(c.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+          created_at: c.created_at,
           isPublic: c.is_public,
           notifyEmail: c.notify_email !== false,
           status: isUnlocked ? "unlocked" : "sealed",
@@ -251,7 +252,7 @@ var ChronicleDB = (function () {
       var creatorId = user ? (user.id || user.user_id || 1) : 1;
       var creatorName = user ? (user.name || user.full_name || user.username || "Creator") : "Creator";
 
-      var newCapId = capsuleData.id || capsuleData.capsule_id || ("CHR-2026-" + Math.floor(100 + Math.random() * 900));
+      var newCapId = "CHR-2026-" + Math.floor(100 + Math.random() * 900);
       var creatorEmail = user ? (user.email || "") : "";
       var newCapsule = {
         capsule_id: newCapId,
@@ -369,7 +370,7 @@ var ChronicleDB = (function () {
       var title = orig ? orig.title : "Journey Capsule";
       var category = orig ? orig.category : "Friendship";
 
-      var newCapId = capsuleData.id || capsuleData.capsule_id || ("CHR-2026-" + Math.floor(100 + Math.random() * 900));
+      var newCapId = "CHR-2026-" + Math.floor(100 + Math.random() * 900);
       var chainedCapsule = {
         capsule_id: newCapId,
         creator_id: senderId,
@@ -446,6 +447,131 @@ var ChronicleDB = (function () {
                c.status === "ready" ||
                (c.unlockDate && new Date(c.unlockDate).getTime() <= Date.now());
       });
+    },
+
+    /**
+     * Helper to test if a capsule was created by a specific user
+     */
+    isCapsuleCreatedByMe: function (cap, forUser) {
+      var active = forUser || (typeof getActiveUser === "function" ? getActiveUser() : null);
+      if (!active) return false;
+      var myId = active.id || active.user_id;
+      var myName = (active.name || active.full_name || "").trim().toLowerCase();
+      var myUser = (active.username || "").trim().toLowerCase();
+      var creator = (cap.creator || cap.creator_name || "").trim().toLowerCase();
+      var creatorId = cap.creatorId || cap.creator_id;
+
+      if (creator === "myself" || creator === "you") return true;
+      if (myId && creatorId && String(creatorId) === String(myId)) return true;
+      if (myName && creator === myName) return true;
+      if (myUser && creator === myUser) return true;
+      return false;
+    },
+
+    /**
+     * Helper to test if a capsule was sent to a specific user as a recipient
+     */
+    isCapsuleSentToMe: function (cap, forUser) {
+      var active = forUser || (typeof getActiveUser === "function" ? getActiveUser() : null);
+      if (!active) return false;
+      if (this.isCapsuleCreatedByMe(cap, active)) return false;
+
+      var myId = active.id || active.user_id;
+      var myName = (active.name || active.full_name || "").trim().toLowerCase();
+      var myUser = (active.username || "").trim().toLowerCase();
+      var myEmail = (active.email || "").trim().toLowerCase();
+      var rec = (cap.recipient || "").trim().toLowerCase();
+
+      if (rec.startsWith("myself")) return false;
+      if (myUser && rec.includes(myUser)) return true;
+      if (myName && rec.includes(myName)) return true;
+      if (myEmail && (rec.includes(myEmail) || rec === myEmail)) return true;
+      return false;
+    },
+
+    /**
+     * Helper to test if a capsule is ready / unlocked
+     */
+    isCapsuleReady: function (cap) {
+      if (!cap) return false;
+      if (cap.status === "unlocked" || cap.status === "ready") return true;
+      var targetStr = cap.unlock_date || cap.unlockDate;
+      if (!targetStr) return false;
+      var target = new Date(targetStr).getTime();
+      return !isNaN(target) && target <= Date.now();
+    },
+
+    /**
+     * Calculate unified vault metrics for a user
+     * Single source of truth for Vault & Profile counters
+     */
+    getVaultMetrics: function (forUser) {
+      var user = forUser || (typeof getActiveUser === "function" ? getActiveUser() : null);
+      var capsules = this.getVaultCapsules(user);
+      var sealedCount = 0;
+      var readyCount = 0;
+      var journeyCount = 0;
+      var createdCount = 0;
+      var receivedCount = 0;
+
+      var self = this;
+      capsules.forEach(function (c) {
+        var isReady = self.isCapsuleReady(c);
+        if (isReady) {
+          readyCount++;
+        } else {
+          sealedCount++;
+        }
+
+        if ((c.chainCount && c.chainCount > 1) || c.parentCapsuleId || c.parent_capsule_id) {
+          journeyCount++;
+        }
+
+        if (self.isCapsuleCreatedByMe(c, user)) {
+          createdCount++;
+        } else {
+          receivedCount++;
+        }
+      });
+
+      return {
+        all: capsules.length,
+        created: createdCount,
+        received: receivedCount,
+        sealed: sealedCount,
+        ready: readyCount,
+        journey: journeyCount,
+        capsules: capsules
+      };
+    },
+
+    /**
+     * Update capsule public / private visibility
+     */
+    setCapsulePublic: function (capsuleId, isPublic) {
+      var db = getDB();
+      var found = false;
+      (db.capsules || []).forEach(function (c) {
+        if (c.capsule_id === capsuleId) {
+          c.is_public = !!isPublic;
+          found = true;
+        }
+      });
+      if (found) {
+        saveDB(db);
+        this.syncVaultStorage();
+      }
+      return found;
+    },
+
+    /**
+     * Synchronize legacy localStorage fallback storage with current ChronicleDB state
+     */
+    syncVaultStorage: function () {
+      try {
+        var currentCaps = this.getVaultCapsules(null);
+        localStorage.setItem("chronicle_vault_capsules", JSON.stringify(currentCaps));
+      } catch (e) {}
     },
 
     /**

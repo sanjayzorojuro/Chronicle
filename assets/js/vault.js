@@ -17,6 +17,9 @@ var timerInterval = null;
  */
 function isCapsuleCreatedByMe(cap) {
   var active = typeof getActiveUser === "function" ? getActiveUser() : null;
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.isCapsuleCreatedByMe) {
+    return ChronicleDB.isCapsuleCreatedByMe(cap, active);
+  }
   if (!active) return false;
   var myName = (active.name || active.full_name || "").trim().toLowerCase();
   var myUser = (active.username || "").trim().toLowerCase();
@@ -34,6 +37,9 @@ function isCapsuleCreatedByMe(cap) {
  */
 function isCapsuleSentToMe(cap) {
   var active = typeof getActiveUser === "function" ? getActiveUser() : null;
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.isCapsuleSentToMe) {
+    return ChronicleDB.isCapsuleSentToMe(cap, active);
+  }
   if (!active) return false;
   var myName = (active.name || active.full_name || "").trim().toLowerCase();
   var myUser = (active.username || "").trim().toLowerCase();
@@ -131,51 +137,62 @@ function formatCountdownString(t) {
  * Update Header Metrics & Tab Count Badges
  */
 function updateMetrics() {
+  var activeUser = typeof getActiveUser === "function" ? getActiveUser() : null;
   var sealedCount = 0;
   var readyCount = 0;
   var journeyCount = 0;
-
   var createdCount = 0;
   var receivedCount = 0;
+  var allCount = allCapsules.length;
 
-  allCapsules.forEach(function (c) {
-    var timer = getTimeRemaining(c.unlockDate);
-    var isActuallyReady = timer.isReady || c.status === "ready" || c.status === "unlocked";
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultMetrics) {
+    var metrics = ChronicleDB.getVaultMetrics(activeUser);
+    sealedCount = metrics.sealed;
+    readyCount = metrics.ready;
+    journeyCount = metrics.journey;
+    createdCount = metrics.created;
+    receivedCount = metrics.received;
+    allCount = metrics.all;
+  } else {
+    allCapsules.forEach(function (c) {
+      var timer = getTimeRemaining(c.unlockDate);
+      var isActuallyReady = timer.isReady || c.status === "ready" || c.status === "unlocked";
 
-    if (isActuallyReady) {
-      readyCount++;
-    } else {
-      sealedCount++;
-    }
+      if (isActuallyReady) {
+        readyCount++;
+      } else {
+        sealedCount++;
+      }
 
-    if (c.chainCount && c.chainCount > 1) {
-      journeyCount++;
-    }
+      if ((c.chainCount && c.chainCount > 1) || c.parentCapsuleId || c.parent_capsule_id) {
+        journeyCount++;
+      }
 
-    var isCreatedByMe = isCapsuleCreatedByMe(c);
-    if (isCreatedByMe) {
-      createdCount++;
-    } else {
-      receivedCount++;
-    }
-  });
+      var isCreatedByMe = isCapsuleCreatedByMe(c);
+      if (isCreatedByMe) {
+        createdCount++;
+      } else {
+        receivedCount++;
+      }
+    });
+  }
 
   // Update DOM counts
   var statSealed = document.getElementById("stat-sealed-count");
   var statReady = document.getElementById("stat-ready-count");
   var statJourney = document.getElementById("stat-journey-count");
 
-  if (statSealed) statSealed.textContent = sealedCount;
-  if (statReady) statReady.textContent = readyCount;
-  if (statJourney) statJourney.textContent = journeyCount;
+  if (statSealed) statSealed.textContent = String(sealedCount);
+  if (statReady) statReady.textContent = String(readyCount);
+  if (statJourney) statJourney.textContent = String(journeyCount);
 
   var countAll = document.getElementById("count-all");
   var countCreated = document.getElementById("count-created");
   var countReceived = document.getElementById("count-received");
 
-  if (countAll) countAll.textContent = allCapsules.length;
-  if (countCreated) countCreated.textContent = createdCount;
-  if (countReceived) countReceived.textContent = receivedCount;
+  if (countAll) countAll.textContent = String(allCount);
+  if (countCreated) countCreated.textContent = String(createdCount);
+  if (countReceived) countReceived.textContent = String(receivedCount);
 }
 
 /**

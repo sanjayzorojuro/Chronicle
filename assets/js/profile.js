@@ -43,7 +43,7 @@ function findProfileUser(db) {
   var actId = active.id || active.user_id || 1;
 
   // Try to find matching user in db to align ID:
-  var users = db.users || [];
+  var users = (db && db.users) || [];
   var dbMatch = users.filter(function (u) {
     if (actUser && u.username && u.username.toLowerCase() === actUser.toLowerCase()) return true;
     if (actEmail && u.email && u.email.toLowerCase() === actEmail.toLowerCase()) return true;
@@ -61,8 +61,15 @@ function findProfileUser(db) {
   return { user: userObj, signedIn: true };
 }
 
+/**
+ * Check if a capsule is unlocked or ready
+ */
 function isUnlocked(c) {
-  if (c.status === "unlocked") return true;
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.isCapsuleReady) {
+    return ChronicleDB.isCapsuleReady(c);
+  }
+  if (!c) return false;
+  if (c.status === "unlocked" || c.status === "ready") return true;
   var unlockDate = c.unlock_date || c.unlockDate;
   if (!unlockDate) return false;
   var t = new Date(unlockDate).getTime();
@@ -70,106 +77,77 @@ function isUnlocked(c) {
 }
 
 /**
- * Load vault capsules and harmonize DB + localStorage
+ * Fallback check if a capsule was created by user
  */
-function getUnifiedVaultCapsules(db, activeUser) {
-  var list = [];
-  var seenIds = {};
-  var seenKeys = {};
+function isCapsuleCreatedByMeFallback(c, user) {
+  var active = user || profileUser;
+  if (!active) return false;
+  var myId = active.id || active.user_id;
+  var myName = (active.name || active.full_name || "").trim().toLowerCase();
+  var myUser = (active.username || "").trim().toLowerCase();
+  var creator = (c.creator || c.creator_name || "").trim().toLowerCase();
+  var creatorId = c.creatorId || c.creator_id;
 
-  function makeKey(cap) {
-    var t = (cap.title || "").trim().toLowerCase();
-    var u = (cap.unlockDate || cap.unlock_date || "").trim();
-    var m = (cap.message || "").trim().toLowerCase().slice(0, 30);
-    return t + "|" + u + "|" + m;
-  }
+  if (creator === "myself" || creator === "you") return true;
+  if (myId && creatorId && String(creatorId) === String(myId)) return true;
+  if (myName && creator === myName) return true;
+  if (myUser && creator === myUser) return true;
+  return false;
+}
 
-  // 1. First, load ChronicleDB vault capsules
+/**
+ * Load vault capsules matching vault.js data source exactly
+ */
+function getVaultCapsules(user) {
   if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultCapsules) {
-    var dbCaps = ChronicleDB.getVaultCapsules(activeUser) || [];
-    dbCaps.forEach(function (c) {
-      if (c && c.id) {
-        var key = makeKey(c);
-        if (!seenIds[c.id] && !seenKeys[key]) {
-          seenIds[c.id] = true;
-          if (key !== "||") seenKeys[key] = true;
-          list.push(c);
-        }
-      }
-    });
+    return ChronicleDB.getVaultCapsules(user);
   }
-
-  // 2. Also merge from localStorage chronicle_vault_capsules without duplicating
   try {
-    var stored = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
-    if (Array.isArray(stored)) {
-      stored.forEach(function (c) {
-        if (c && c.id) {
-          var key = makeKey(c);
-          if (seenIds[c.id] || (key !== "||" && seenKeys[key])) {
-            // Update unlocked status if already seen
-            if (c.status === "unlocked") {
-              list.forEach(function (item) {
-                if (item.id === c.id || makeKey(item) === key) item.status = "unlocked";
-              });
-            }
-          } else {
-            seenIds[c.id] = true;
-            if (key !== "||") seenKeys[key] = true;
-            list.push(c);
+    var stored = localStorage.getItem("chronicle_vault_capsules");
+    if (stored) {
+      var parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.filter(function (c) {
+          if (typeof ChronicleDB !== "undefined" && ChronicleDB.isCapsuleCreatedByMe) {
+            return ChronicleDB.isCapsuleCreatedByMe(c, user) || ChronicleDB.isCapsuleSentToMe(c, user);
           }
-        }
-      });
+          return isCapsuleCreatedByMeFallback(c, user);
+        });
+      }
     }
-  } catch (e) {}
-
-  return list;
+  } catch (err) {}
+  return [];
 }
 
 /**
  * Calculate user stats matching exact vault and recipient logic
  */
-function buildStats(db, uid, vaultCapsules) {
-  var myName = profileUser ? (profileUser.full_name || profileUser.name || "").trim().toLowerCase() : "";
-  var myUser = profileUser ? (profileUser.username || "").trim().toLowerCase() : "";
-  var myEmail = profileUser ? (profileUser.email || "").trim().toLowerCase() : "";
-
+function buildStats(vaultCapsules, user) {
   var created = [];
   var received = [];
   var opened = [];
   var journeys = [];
 
-  vaultCapsules.forEach(function (cap) {
-    var creator = (cap.creator || "").trim().toLowerCase();
-    var creatorId = cap.creatorId ? String(cap.creatorId) : "";
-    var recipient = (cap.recipient || "").trim().toLowerCase();
-
+  (vaultCapsules || []).forEach(function (c) {
     var isCreated = false;
-    if (creator === "myself" || creator === "you") isCreated = true;
-    if (myName && (creator === myName || creator.includes(myName))) isCreated = true;
-    if (myUser && (creator === myUser || creator.includes(myUser))) isCreated = true;
-    if (uid && creatorId && creatorId === String(uid)) isCreated = true;
-
-    var isReceived = false;
-    if (!isCreated) {
-      if (myUser && recipient.includes(myUser)) isReceived = true;
-      if (myName && recipient.includes(myName)) isReceived = true;
-      if (myEmail && recipient.includes(myEmail)) isReceived = true;
+    if (typeof ChronicleDB !== "undefined" && ChronicleDB.isCapsuleCreatedByMe) {
+      isCreated = ChronicleDB.isCapsuleCreatedByMe(c, user);
+    } else {
+      isCreated = isCapsuleCreatedByMeFallback(c, user);
     }
 
     if (isCreated) {
-      created.push(cap);
-    } else if (isReceived) {
-      received.push(cap);
+      created.push(c);
+    } else {
+      received.push(c);
     }
 
-    // Check if opened / unlocked
-    if (cap.status === "unlocked" || isUnlocked(cap)) {
-      opened.push(cap);
+    if (isUnlocked(c)) {
+      opened.push(c);
     }
 
-    if (cap.parentCapsuleId || cap.parent_capsule_id) {
-      journeys.push(cap);
+    if ((c.chainCount && c.chainCount > 1) || c.parentCapsuleId || c.parent_capsule_id) {
+      journeys.push(c);
     }
   });
 
@@ -184,11 +162,11 @@ function buildStats(db, uid, vaultCapsules) {
 /**
  * Construct chronological activity items for the timeline
  */
-function buildEvents(stats, db) {
+function buildEvents(stats) {
   var ev = [];
 
-  stats.created.forEach(function (c) {
-    var isJourney = !!(c.parentCapsuleId || c.parent_capsule_id);
+  (stats.created || []).forEach(function (c) {
+    var isJourney = !!((c.chainCount && c.chainCount > 1) || c.parentCapsuleId || c.parent_capsule_id);
     var dateStr = c.created_at || c.dateCreated;
     var ts = dateStr ? new Date(dateStr).getTime() : Date.now();
     if (isNaN(ts)) ts = Date.now();
@@ -201,7 +179,7 @@ function buildEvents(stats, db) {
     });
   });
 
-  stats.opened.forEach(function (c) {
+  (stats.opened || []).forEach(function (c) {
     var dateStr = c.opened_at || c.unlock_date || c.unlockDate;
     var ts = dateStr ? new Date(dateStr).getTime() : Date.now();
     if (isNaN(ts)) ts = Date.now();
@@ -212,6 +190,21 @@ function buildEvents(stats, db) {
       title: c.title,
       ts: ts
     });
+  });
+
+  (stats.journeys || []).forEach(function (c) {
+    var alreadyAdded = ev.some(function (e) { return e.title === c.title && e.type === "journey"; });
+    if (!alreadyAdded) {
+      var dateStr = c.created_at || c.dateCreated;
+      var ts = dateStr ? new Date(dateStr).getTime() : Date.now();
+      if (isNaN(ts)) ts = Date.now();
+      ev.push({
+        type: "journey",
+        label: "Continued journey of",
+        title: c.title,
+        ts: ts
+      });
+    }
   });
 
   // Filter valid timestamps and sort newest first
@@ -272,7 +265,13 @@ function renderShareList(vaultCapsules) {
 
   list.innerHTML = "";
   var mine = (vaultCapsules || []).filter(function (c) {
-    return isUnlocked(c);
+    var isCreated = false;
+    if (typeof ChronicleDB !== "undefined" && ChronicleDB.isCapsuleCreatedByMe) {
+      isCreated = ChronicleDB.isCapsuleCreatedByMe(c, profileUser);
+    } else {
+      isCreated = isCapsuleCreatedByMeFallback(c, profileUser);
+    }
+    return isCreated && isUnlocked(c);
   });
 
   mine.forEach(function (c) {
@@ -306,11 +305,15 @@ function renderShareList(vaultCapsules) {
 }
 
 function setCapsulePublic(capsuleId, makePublic) {
-  var db = loadDb();
-  (db.capsules || []).forEach(function (c) {
-    if (c.capsule_id === capsuleId) c.is_public = makePublic;
-  });
-  try { localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db)); } catch (e) {}
+  if (typeof ChronicleDB !== "undefined" && ChronicleDB.setCapsulePublic) {
+    ChronicleDB.setCapsulePublic(capsuleId, makePublic);
+  } else {
+    var db = loadDb();
+    (db.capsules || []).forEach(function (c) {
+      if (c.capsule_id === capsuleId) c.is_public = makePublic;
+    });
+    try { localStorage.setItem(DB_STORAGE_KEY, JSON.stringify(db)); } catch (e) {}
+  }
 
   try {
     var vaultCaps = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
@@ -320,8 +323,7 @@ function setCapsulePublic(capsuleId, makePublic) {
     localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultCaps));
   } catch (e) {}
 
-  var vaultCapsules = getUnifiedVaultCapsules(db, profileUser);
-  renderShareList(vaultCapsules);
+  refreshProfileData();
   if (typeof showToast === "function") {
     showToast(makePublic ? "Capsule is now public on the Time Wall." : "Capsule is now private.", "success");
   }
@@ -330,13 +332,53 @@ function setCapsulePublic(capsuleId, makePublic) {
 function animateCount(el, target) {
   if (!el) return;
   var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (reduce || target === 0) { el.textContent = target; return; }
-  var n = 0, step = Math.max(1, Math.ceil(target / 20));
+  if (reduce || target === 0) { el.textContent = String(target); return; }
+  var currentVal = parseInt(el.textContent || "0", 10);
+  if (isNaN(currentVal)) currentVal = 0;
+  if (currentVal === target) return;
+
+  var n = currentVal;
+  var step = Math.max(1, Math.ceil(Math.abs(target - currentVal) / 20));
+  var isUp = target > currentVal;
   var iv = setInterval(function () {
-    n = Math.min(target, n + step);
-    el.textContent = n;
-    if (n >= target) clearInterval(iv);
+    if (isUp) {
+      n = Math.min(target, n + step);
+    } else {
+      n = Math.max(target, n - step);
+    }
+    el.textContent = String(n);
+    if (n === target) clearInterval(iv);
   }, 30);
+}
+
+/**
+ * Single source of truth for refreshing profile statistics and matching vault
+ */
+function refreshProfileData() {
+  if (!profileUser) return;
+
+  var metrics = (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultMetrics)
+    ? ChronicleDB.getVaultMetrics(profileUser)
+    : null;
+
+  var vaultCapsules = metrics ? metrics.capsules : getVaultCapsules(profileUser);
+  var stats = buildStats(vaultCapsules, profileUser);
+
+  var createdCount = metrics ? metrics.created : stats.created.length;
+  var receivedCount = metrics ? metrics.received : stats.received.length;
+  var openedCount = metrics ? metrics.ready : stats.opened.length;
+  var journeysCount = metrics ? metrics.journey : stats.journeys.length;
+
+  animateCount(document.getElementById("pf-created"), createdCount);
+  animateCount(document.getElementById("pf-received"), receivedCount);
+  animateCount(document.getElementById("pf-opened"), openedCount);
+  animateCount(document.getElementById("pf-journeys"), journeysCount);
+
+  activityEvents = buildEvents(stats);
+  var activeChip = document.querySelector(".activity-filter .chip.active");
+  var filterType = activeChip ? (activeChip.getAttribute("data-type") || "all") : "all";
+  renderTimeline(filterType);
+  renderShareList(vaultCapsules);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -364,18 +406,8 @@ document.addEventListener("DOMContentLoaded", function () {
   if (userEl) userEl.textContent = "@" + profileUser.username;
   if (emailEl) emailEl.textContent = profileUser.email || "";
 
-  // Unify vault capsules across ChronicleDB and localStorage
-  var vaultCapsules = getUnifiedVaultCapsules(profileDb, profileUser);
-  var stats = buildStats(profileDb, profileUser.user_id, vaultCapsules);
-
-  animateCount(document.getElementById("pf-created"), stats.created.length);
-  animateCount(document.getElementById("pf-received"), stats.received.length);
-  animateCount(document.getElementById("pf-opened"), stats.opened.length);
-  animateCount(document.getElementById("pf-journeys"), stats.journeys.length);
-
-  activityEvents = buildEvents(stats, profileDb);
-  renderTimeline("all");
-  renderShareList(vaultCapsules);
+  // Load and display statistics strictly matching vault.html
+  refreshProfileData();
 
   // Filter chip buttons
   var filterChips = document.querySelectorAll(".activity-filter .chip");
@@ -387,6 +419,23 @@ document.addEventListener("DOMContentLoaded", function () {
       renderTimeline(filterType);
     });
   });
+
+  // Keep live sync across tabs or when timers reach ready state
+  window.addEventListener("storage", function (e) {
+    if (e.key === "chronicle_local_db_v2" || e.key === "chronicle_vault_capsules") {
+      refreshProfileData();
+    }
+  });
+
+  setInterval(function () {
+    if (typeof ChronicleDB !== "undefined" && ChronicleDB.getVaultMetrics && profileUser) {
+      var metrics = ChronicleDB.getVaultMetrics(profileUser);
+      var currentOpened = parseInt((document.getElementById("pf-opened") || {}).textContent || "0", 10);
+      if (metrics.ready !== currentOpened) {
+        refreshProfileData();
+      }
+    }
+  }, 1000);
 
   // Sign out confirmation modal handlers
   var signoutBtn = document.getElementById("btn-profile-signout");
