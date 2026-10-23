@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-    content="Write a Chronicle time capsule. Add a message, an optional photo or link, and a future unlock date." />
+    content="Write a Chronicle time capsule. Add a message and a future unlock date." />
   <title>Capsule Creation Studio — Chronicle</title>
   <link rel="stylesheet" href="../assets/css/common.css" />
   <link rel="stylesheet" href="../assets/css/member1.css" />
@@ -102,29 +102,6 @@
           </div>
         </div>
 
-        <details id="optional-extras" class="optional-extras">
-          <summary><span>Add an image or link <span class="optional-label">Optional</span></span><span
-              class="details-plus" aria-hidden="true">+</span></summary>
-          <div class="extras-body">
-            <div class="form-group">
-              <label for="capsule-image">A photo to remember</label>
-              <input type="file" id="capsule-image" name="image" accept="image/jpeg,image/png,image/webp"
-                aria-describedby="image-hint capsule-image-error" />
-              <p id="image-hint" class="field-hint">JPG, PNG or WebP. Maximum 2 MB.</p>
-              <div id="selected-image" class="selected-image" hidden><span id="image-name"></span><button type="button"
-                  id="remove-image" class="text-button">Remove</button></div>
-              <span id="capsule-image-error" class="error-msg" role="alert"></span>
-            </div>
-            <div class="form-group">
-              <label for="capsule-link">A meaningful link</label>
-              <input type="url" id="capsule-link" name="link" placeholder="https://example.com/your-memory"
-                maxlength="2048" aria-describedby="link-hint capsule-link-error" />
-              <p id="link-hint" class="field-hint">An album, a video, or something you'd like to revisit.</p>
-              <span id="capsule-link-error" class="error-msg" role="alert"></span>
-            </div>
-          </div>
-        </details>
-
         <p class="draft-note"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="5" y="10" width="14" height="10" rx="2" />
             <path d="M8 10V7a4 4 0 0 1 8 0v3m-4 4v2" />
@@ -155,9 +132,6 @@
             <h2 id="preview-title">Your story starts here.</h2>
             <p id="preview-message" class="preview-message">A few words today can mean a whole lot tomorrow. Your
               message will appear here as you write.</p>
-            <img id="preview-image" class="preview-image" alt="Your attached photo" hidden />
-            <a id="preview-link" class="preview-link" target="_blank" rel="noopener noreferrer" hidden>↗ A link to
-              revisit</a>
             <dl class="preview-meta">
               <div>
                 <dt>Category</dt>
@@ -215,7 +189,7 @@
     </div>
   </footer>
   <script src="../assets/js/common.js"></script>
-  <script src="../assets/js/create.js"></script>
+  <script src="../assets/js/create.js?v=2"></script>
 </body>
 
 </html>
