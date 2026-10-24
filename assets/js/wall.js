@@ -17,6 +17,8 @@ function yearOf(item) {
 function toWallItem(c) {
   var unlockMs = new Date(c.unlock_date).getTime();
   if (!c.is_public || isNaN(unlockMs) || unlockMs > Date.now()) return null;
+  var cat = (c.category || "").trim().toLowerCase();
+  if (cat === "milestone" || cat === "memories" || cat === "memory") return null;
   return {
     id: c.capsule_id,
     title: c.title,
@@ -47,7 +49,7 @@ function loadWallItems(callback) {
   }
   try { liked = JSON.parse(localStorage.getItem("chronicle_wall_likes") || "{}") || {}; } catch (e) { liked = {}; }
 
-  fetch("../data/time_wall.json")
+  fetch("../data/time_wall.json?v=" + Date.now())
     .then(function (res) {
       if (!res.ok) throw new Error("HTTP " + res.status);
       return res.json();
