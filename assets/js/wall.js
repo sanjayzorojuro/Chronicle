@@ -83,7 +83,14 @@ function getFiltered() {
   var q = wallState.query.toLowerCase();
   var list = wallItems.filter(function (i) {
     if (wallState.year !== "all" && yearOf(i) !== wallState.year) return false;
-    if (wallState.category !== "all" && i.category !== wallState.category) return false;
+    if (wallState.category !== "all") {
+      if (wallState.category === "Other") {
+        var isStandard = i.category === "Personal" || i.category === "Friendship" || i.category === "Family";
+        if (i.category !== "Other" && isStandard) return false;
+      } else if (i.category !== wallState.category) {
+        return false;
+      }
+    }
     if (q && (i.title + " " + i.message + " " + i.creator).toLowerCase().indexOf(q) === -1) return false;
     return true;
   });

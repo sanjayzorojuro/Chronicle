@@ -18,7 +18,7 @@
       "creator_name": "Vikram Shenoy",
       "title": "Our last day of college",
       "message": "We promised we would meet here again. If you are reading this, I hope all of us showed up. Bring chai.",
-      "category": "Memories",
+      "category": "Family",
       "unlock_date": "2025-05-30T10:00:00Z",
       "is_public": true
     },
@@ -36,7 +36,7 @@
       "creator_name": "Neil D'Souza",
       "title": "Open when you finish your first job",
       "message": "Remember the nervous version of you who rehearsed introductions in the mirror. Be kind to them. They got you here.",
-      "category": "Milestone",
+      "category": "Other",
       "unlock_date": "2026-08-09T08:00:00Z",
       "is_public": true
     },
@@ -45,7 +45,7 @@
       "creator_name": "Tara Bhat",
       "title": "Monsoon of 2025",
       "message": "It rained for nine days straight and we still walked to the beach. Never let anyone tell you that was a bad idea.",
-      "category": "Memories",
+      "category": "Family",
       "unlock_date": "2026-09-02T07:00:00Z",
       "is_public": true
     }
