@@ -51,9 +51,10 @@ function isCapsuleSentToMe(cap) {
     return false;
   }
 
-  if (myUser && rec.includes(myUser)) return true;
-  if (myName && rec.includes(myName)) return true;
-  if (myEmail && rec.includes(myEmail)) return true;
+  var tokens = rec.split(",").map(function (s) { return s.trim(); });
+  if (myUser && tokens.indexOf(myUser) !== -1) return true;
+  if (myName && tokens.indexOf(myName) !== -1) return true;
+  if (myEmail && (tokens.indexOf(myEmail) !== -1 || rec === myEmail)) return true;
   return false;
 }
 
@@ -472,15 +473,6 @@ function startGlobalCountdownTicker() {
   }, 1000);
 }
 
-/**
- * Helper to escape HTML characters
- */
-function escapeHTML(str) {
-  if (!str) return "";
-  var div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 // Setup Event Listeners
 document.addEventListener("DOMContentLoaded", function () {

@@ -7,15 +7,6 @@ var currentCapsule = null;
 var unlockedCapsules = [];
 var registeredUsersList = [];
 
-/**
- * Basic HTML escaping to prevent XSS.
- */
-function escapeHTML(str) {
-  if (!str) return "";
-  var div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 /**
  * Helper: check if a capsule is unlocked

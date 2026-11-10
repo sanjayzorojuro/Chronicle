@@ -3,7 +3,7 @@
  * Handles the form, live preview, and local draft.
  * This is a front-end demo, not a secure time-lock service.
  */
-const DRAFT_KEY = "chronicleDraft";
+const DRAFT_KEY = "chronicle_current_draft";
 const RECIPIENT_PAGE = "seal.html"; // Connected to Member 2's Recipient Selection & Seal page.
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -122,12 +122,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function saveDraft(quiet = false) {
     const draft = buildDraft();
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
-
-      // Also sync to Member 2's seal page schema
       var activeUser = typeof getActiveUser === "function" ? getActiveUser() : null;
       var sealDraft = {
-        id: "CHR-" + Math.floor(1000 + Math.random() * 9000),
+        id: (typeof generateCapsuleId === "function" ? generateCapsuleId() : ("CHR-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase())),
         title: draft.title,
         message: draft.message,
         category: draft.category,
@@ -135,14 +132,14 @@ document.addEventListener("DOMContentLoaded", () => {
         displayUnlockDate: displayDate(draft.unlockDate),
         creator: (activeUser && activeUser.name) ? activeUser.name : "You",
         dateCreated: new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" }),
+        createdAt: draft.createdAt,
         isPublic: false
       };
-      try {
-        localStorage.setItem("chronicle_current_draft", JSON.stringify(sealDraft));
-      } catch (err) {}
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(sealDraft));
+      localStorage.removeItem("chronicleDraft");
 
       createdAt = draft.createdAt;
-      lastSavedDraft = draft;
+      lastSavedDraft = sealDraft;
       status.textContent = "Draft saved in this browser. You can come back to it.";
       if (!quiet) showToast("Draft saved. A little piece of now, kept for later.");
       return draft;
@@ -155,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function restoreDraft() {
     try {
-      const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+      const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) || localStorage.getItem("chronicleDraft") || "null");
       if (!saved || typeof saved !== "object" || Array.isArray(saved)) return false;
 
       title.value = typeof saved.title === "string" ? saved.title : "";

@@ -10,10 +10,32 @@ var defaultAuthUsers = [];
 var EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 /**
+ * Computes SHA-256 hash string for password security
+ */
+async function hashPassword(str) {
+  if (!str) return "";
+  try {
+    if (window.crypto && window.crypto.subtle) {
+      var buffer = new TextEncoder().encode(str);
+      var digest = await window.crypto.subtle.digest("SHA-256", buffer);
+      return Array.from(new Uint8Array(digest))
+        .map(function (b) { return b.toString(16).padStart(2, "0"); })
+        .join("");
+    }
+  } catch (e) {}
+  var hash = 0;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return "h_" + Math.abs(hash).toString(16);
+}
+
+/**
  * Handle Login Form Submission
  * Only logs in if user exists in the registered database and password matches
  */
-function handleLogin(event) {
+async function handleLogin(event) {
   event.preventDefault();
 
   var usernameInput = document.getElementById("username");
@@ -65,8 +87,10 @@ function handleLogin(event) {
     return;
   }
 
-  // Strict check: Password verification
-  if (matchedUser.password && matchedUser.password !== password) {
+  // Strict check: Password verification (supports hashed and legacy plaintext)
+  var enteredHash = await hashPassword(password);
+  var passwordMatches = (matchedUser.password === enteredHash) || (matchedUser.password === password);
+  if (!passwordMatches) {
     if (groupPassword) groupPassword.classList.add("has-error");
     if (passwordError) {
       passwordError.textContent = "Incorrect password. Please try again.";
@@ -103,7 +127,7 @@ function handleLogin(event) {
  * Handle Registration Form Submission
  * Requires real valid email and prevents duplicate accounts
  */
-function handleRegister(event) {
+async function handleRegister(event) {
   event.preventDefault();
 
   var nameInput = document.getElementById("fullname");
@@ -207,14 +231,15 @@ function handleRegister(event) {
     return;
   }
 
-  // Build new user record with password
+  // Build new user record with hashed password
+  var hashedPassword = await hashPassword(pass);
   var initials = name.split(" ").map(function (n) { return n[0]; }).join("").slice(0, 2).toUpperCase() || "U";
   var newUser = {
     id: Date.now(),
     username: username,
     name: name,
     email: email,
-    password: pass,
+    password: hashedPassword,
     avatar: initials
   };
 
@@ -233,7 +258,7 @@ function handleRegister(event) {
       username: username,
       full_name: name,
       email: email,
-      password: pass,
+      password: hashedPassword,
       avatar: initials
     });
   }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chronicle — Client-side Unit Tests</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; line-height: 1.5; color: #222; }
+    h1 { font-size: 1.4rem; border-bottom: 2px solid #ddd; padding-bottom: 8px; }
+    .test { margin: 10px 0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.95rem; }
+    .pass { background: #e8f5e9; color: #2e7d32; }
+    .fail { background: #ffebee; color: #c62828; }
+    #summary { margin-top: 20px; font-weight: bold; }
+  </style>
+  <script src="../assets/js/common.js"></script>
+  <script src="../assets/js/db.js"></script>
+</head>
+<body>
+  <h1>Chronicle Test Runner</h1>
+  <div id="results"></div>
+  <div id="summary">Running tests...</div>
+
+  <script>
+    var results = document.getElementById("results");
+    var passCount = 0;
+    var failCount = 0;
+
+    function assert(name, condition) {
+      var div = document.createElement("div");
+      div.className = "test " + (condition ? "pass" : "fail");
+      div.textContent = (condition ? "✓ PASS: " : "✗ FAIL: ") + name;
+      results.appendChild(div);
+      if (condition) passCount++; else failCount++;
+    }
+
+    // 1. HTML Escaping
+    var escaped = escapeHTML("<script>alert(1)<" + "/script>");
+    assert("escapeHTML sanitizes tags", escaped === "&lt;script&gt;alert(1)&lt;/script&gt;");
+
+    // 2. ID Generation
+    var id1 = generateCapsuleId();
+    var id2 = generateCapsuleId();
+    assert("generateCapsuleId produces unique strings", id1 !== id2 && id1.startsWith("CHR-"));
+
+    // 3. Substring isolation
+    var cap = { creator: "You", recipient: "Daniel, Alice" };
+    var activeUser = { username: "dan", name: "Dan" };
+    var matches = ChronicleDB.isCapsuleSentToMe(cap, activeUser);
+    assert("isCapsuleSentToMe rejects substring 'dan' in 'Daniel'", matches === false);
+
+    var matchingUser = { username: "alice", name: "Alice" };
+    var validMatch = ChronicleDB.isCapsuleSentToMe(cap, matchingUser);
+    assert("isCapsuleSentToMe matches exact recipient 'Alice'", validMatch === true);
+
+    document.getElementById("summary").textContent = "Completed: " + passCount + " passed, " + failCount + " failed.";
+  </script>
+</body>
+</html>
+

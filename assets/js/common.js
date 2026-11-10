@@ -4,6 +4,27 @@
    =========================== */
 
 /**
+ * Basic HTML escaping to prevent XSS across all views.
+ */
+function escapeHTML(str) {
+  if (!str) return "";
+  var div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+window.escapeHTML = escapeHTML;
+
+/**
+ * Generate unique collision-resistant capsule identifiers.
+ */
+var _capCounter = 0;
+function generateCapsuleId() {
+  _capCounter = (_capCounter + 1) % 10000;
+  return "CHR-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 7).toUpperCase() + "-" + _capCounter;
+}
+window.generateCapsuleId = generateCapsuleId;
+
+/**
  * Show a toast notification.
  * @param {string} message - Text to display
  * @param {string} type - 'success' or 'info'

@@ -125,27 +125,32 @@ function runUnlockSequence() {
 function renderCapsule() {
   document.getElementById("cap-title").textContent = demoCapsule.title;
 
-  // Convert newlines to <br>
-  document.getElementById("cap-message").innerHTML = demoCapsule.message.replace(/\n/g, "<br>");
+  // Safely render message text with preserved whitespace (preventing XSS)
+  var capMsgEl = document.getElementById("cap-message");
+  if (capMsgEl) {
+    capMsgEl.textContent = demoCapsule.message;
+    capMsgEl.style.whiteSpace = "pre-wrap";
+  }
 
   document.getElementById("cap-creator").textContent = demoCapsule.creator;
   document.getElementById("cap-category").textContent = demoCapsule.category;
   document.getElementById("cap-date-created").textContent = demoCapsule.dateCreated;
   document.getElementById("cap-date-opened").textContent = demoCapsule.dateOpened;
 
-  // Mark capsule as officially unlocked in ChronicleDB and localStorage
+  // Mark capsule as officially unlocked in ChronicleDB and fallback storage
   if (demoCapsule.id && typeof ChronicleDB !== "undefined" && ChronicleDB.unlockCapsule) {
     ChronicleDB.unlockCapsule(demoCapsule.id);
+  } else if (demoCapsule.id) {
+    try {
+      var vaultCaps = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
+      vaultCaps.forEach(function (c) {
+        if (c.id === demoCapsule.id) {
+          c.status = "unlocked";
+        }
+      });
+      localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultCaps));
+    } catch (e) {}
   }
-  try {
-    var vaultCaps = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
-    vaultCaps.forEach(function (c) {
-      if (c.id === demoCapsule.id) {
-        c.status = "unlocked";
-      }
-    });
-    localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultCaps));
-  } catch (e) {}
 
   // Link Continue Journey button with capsule context
   var journeyBtn = document.querySelector(".capsule-actions a[href*='journey.html']");

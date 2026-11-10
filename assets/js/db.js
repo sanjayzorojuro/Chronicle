@@ -135,8 +135,8 @@ var ChronicleDB = (function () {
      */
     addUser: function (newUser) {
       var db = getDB();
-      newUser.user_id = (db.users.length > 0) ? Math.max.apply(null, db.users.map(function(u){ return u.user_id; })) + 1 : 1;
-      if (!newUser.password) newUser.password = "password123";
+      newUser.user_id = (db.users.length > 0) ? (Math.max.apply(null, db.users.map(function(u){ return Number(u.user_id) || 0; })) + 1) : 1;
+      if (!newUser.password) newUser.password = "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f";
       db.users.push(newUser);
       saveDB(db);
 
@@ -201,9 +201,9 @@ var ChronicleDB = (function () {
             }
 
             if (myId && r.user_id && String(r.user_id) === String(myId)) return true;
-            if (myUsername && rName.includes(myUsername)) return true;
-            if (myName && rName.includes(myName)) return true;
-            if (myEmail && (rName.includes(myEmail) || rEmail === myEmail)) return true;
+            if (myUsername && rName === myUsername) return true;
+            if (myName && rName === myName) return true;
+            if (myEmail && (rEmail === myEmail || rName === myEmail)) return true;
             return false;
           });
 
@@ -252,7 +252,7 @@ var ChronicleDB = (function () {
       var creatorId = user ? (user.id || user.user_id || 1) : 1;
       var creatorName = user ? (user.name || user.full_name || user.username || "Creator") : "Creator";
 
-      var newCapId = "CHR-2026-" + Math.floor(100 + Math.random() * 900);
+      var newCapId = capsuleData.id || (typeof generateCapsuleId === "function" ? generateCapsuleId() : ("CHR-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase()));
       var creatorEmail = user ? (user.email || "") : "";
       var newCapsule = {
         capsule_id: newCapId,
@@ -299,6 +299,7 @@ var ChronicleDB = (function () {
       }
 
       saveDB(db);
+      this.syncVaultStorage();
       return newCapsule;
     },
 
@@ -320,12 +321,15 @@ var ChronicleDB = (function () {
       var target = capsules.find(function (c) { return c.capsule_id === capsuleId; });
       if (!target) return [];
 
-      // Find root capsule
+      // Find root capsule (with cycle protection)
       var root = target;
-      while (root.parent_capsule_id) {
+      var visited = {};
+      visited[root.capsule_id] = true;
+      while (root.parent_capsule_id && !visited[root.parent_capsule_id]) {
         var parent = capsules.find(function (c) { return c.capsule_id === root.parent_capsule_id; });
         if (parent) {
           root = parent;
+          visited[root.capsule_id] = true;
         } else {
           break;
         }
@@ -370,7 +374,7 @@ var ChronicleDB = (function () {
       var title = orig ? orig.title : "Journey Capsule";
       var category = orig ? orig.category : "Friendship";
 
-      var newCapId = "CHR-2026-" + Math.floor(100 + Math.random() * 900);
+      var newCapId = capsuleData.id || (typeof generateCapsuleId === "function" ? generateCapsuleId() : ("CHR-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase()));
       var chainedCapsule = {
         capsule_id: newCapId,
         creator_id: senderId,
@@ -405,6 +409,7 @@ var ChronicleDB = (function () {
       });
 
       saveDB(db);
+      this.syncVaultStorage();
       return chainedCapsule;
     },
 
@@ -425,16 +430,7 @@ var ChronicleDB = (function () {
         }
       });
       saveDB(db);
-
-      try {
-        var vaultCaps = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
-        vaultCaps.forEach(function (c) {
-          if (c.id === capsuleId) {
-            c.status = "unlocked";
-          }
-        });
-        localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultCaps));
-      } catch (e) {}
+      this.syncVaultStorage();
     },
 
     /**
@@ -483,9 +479,10 @@ var ChronicleDB = (function () {
       var rec = (cap.recipient || "").trim().toLowerCase();
 
       if (rec.startsWith("myself")) return false;
-      if (myUser && rec.includes(myUser)) return true;
-      if (myName && rec.includes(myName)) return true;
-      if (myEmail && (rec.includes(myEmail) || rec === myEmail)) return true;
+      var tokens = rec.split(",").map(function (s) { return s.trim(); });
+      if (myUser && tokens.indexOf(myUser) !== -1) return true;
+      if (myName && tokens.indexOf(myName) !== -1) return true;
+      if (myEmail && (tokens.indexOf(myEmail) !== -1 || rec === myEmail)) return true;
       return false;
     },
 

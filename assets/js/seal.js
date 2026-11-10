@@ -8,7 +8,7 @@ var registeredUsers = [];
 
 // Active state
 var currentDraft = {
-  id: "CHR-" + Math.floor(1000 + Math.random() * 9000),
+  id: (typeof generateCapsuleId === "function" ? generateCapsuleId() : ("CHR-" + Date.now().toString(36).toUpperCase() + "-" + Math.random().toString(36).substring(2, 6).toUpperCase())),
   title: "A Letter for My Future Self",
   message: "Remember the challenges you conquered, the dreams you chased, and never forget where this journey started.",
   category: "Friendship",
@@ -350,30 +350,15 @@ function saveCapsuleToVault(newCapsule) {
       selectedMode,
       activeUser
     );
+    return;
   }
   try {
-    var vaultData = [];
-    var existing = localStorage.getItem("chronicle_vault_capsules");
-    if (existing) {
-      vaultData = JSON.parse(existing);
-    }
-    // Prepend new capsule
+    var vaultData = JSON.parse(localStorage.getItem("chronicle_vault_capsules") || "[]");
     vaultData.unshift(newCapsule);
     localStorage.setItem("chronicle_vault_capsules", JSON.stringify(vaultData));
-  } catch (err) {
-    console.error("Error saving capsule to vault:", err);
-  }
+  } catch (err) {}
 }
 
-/**
- * Helper to escape HTML characters.
- */
-function escapeHTML(str) {
-  if (!str) return "";
-  var div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 // DOM Setup
 document.addEventListener("DOMContentLoaded", function () {
